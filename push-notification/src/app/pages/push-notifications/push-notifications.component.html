@@ -1,0 +1,38 @@
+<main class="mx-auto flex min-h-screen max-w-4xl items-center justify-center p-6">
+  <section class="w-full rounded-2xl border border-slate-800 bg-slate-900/80 p-8 shadow-2xl shadow-cyan-500/10">
+    <h1 class="text-3xl font-semibold tracking-tight text-cyan-300">{{ title() }}</h1>
+    <p class="mt-2 text-slate-300">
+      Angular 20 project with SCSS + Tailwind and a push notification service.
+    </p>
+
+    <div class="mt-6 rounded-lg border border-slate-700 bg-slate-950/60 p-4">
+      <p class="text-sm text-slate-300">{{ statusMessage() }}</p>
+    </div>
+
+    @if (!isSupported) {
+      <p class="mt-4 text-sm font-medium text-amber-300">
+        Use a modern browser (Chrome/Edge/Firefox) over HTTPS or localhost to enable notifications.
+      </p>
+    }
+
+    <div class="mt-6 flex flex-wrap gap-3">
+      <button
+        type="button"
+        class="rounded-md bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
+        [disabled]="!isSupported || permission() === 'granted'"
+        (click)="enableNotifications()"
+      >
+        Enable Notifications
+      </button>
+
+      <button
+        type="button"
+        class="rounded-md border border-cyan-500 px-4 py-2 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-500/10 disabled:cursor-not-allowed disabled:border-slate-700 disabled:text-slate-400"
+        [disabled]="permission() !== 'granted'"
+        (click)="sendTestNotification()"
+      >
+        Send Test Notification
+      </button>
+    </div>
+  </section>
+</main>
