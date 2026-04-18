@@ -1,24 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PushNotificationService } from '../../services/push-notification.service';
-
-export interface ParsedMessageDetails {
-  msgTitle?: string;
-  msg?: string;
-  imgSrc?: string;
-  link?: string;
-  activityNode?: string;
-  LogoSrc?: string;
-}
-
-export interface ApiResponseMessage {
-  messageID: number;
-  messageDetails: string;
-  parsedDetails?: ParsedMessageDetails;
-  messageType: string;
-  systemName: string;
-  valid: number;
-}
+import { ApiResponseMessage, ParsedMessageDetails } from '../../models/message.model';
 
 @Component({
   selector: 'app-push-notifications',
@@ -59,7 +42,7 @@ export class PushNotificationsComponent {
     {
       messageID:20,
       messageDetails: '{"msgTitle":"bdjobs-amcat Certification Test Report is Ready!","msg":"Your bdjobs-amcat Certificate test result with details report is ready. Click to see details","imgSrc":"","link":"https://mybdjobs.bdjobs.com/mybdjobs/assessment/smnt_certification_complete_examlist.asp/"}',
-      messageType: "pm",
+      messageType: "message",
       systemName: "assessment",
       valid: 1
     }

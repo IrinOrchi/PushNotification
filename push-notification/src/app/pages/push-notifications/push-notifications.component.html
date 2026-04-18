@@ -165,14 +165,14 @@
           <div class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-xl shadow-blue-900/5 transition-all">
             <div class="overflow-x-auto">
               <table class="w-full text-left text-sm text-slate-600">
-                <thead class="bg-blue-50 text-xs uppercase tracking-wider text-blue-800 border-b border-blue-100">
+                <thead class="bg-blue-100/50 text-sm font-bold text-blue-900 border-b border-blue-200">
                   <tr>
-                    <th scope="col" class="whitespace-nowrap px-6 py-5 font-semibold">S/L No.</th>
-                    <th scope="col" class="px-6 py-5 font-semibold">Message</th>
-                    <th scope="col" class="px-6 py-5 font-semibold">Type</th>
-                    <th scope="col" class="px-6 py-5 font-semibold">System</th>
-                    <th scope="col" class="px-6 py-5 font-semibold">Validity</th>
-                    <th scope="col" class="px-6 py-5 text-right font-semibold">Actions</th>
+                    <th scope="col" class="whitespace-nowrap px-6 py-5 font-bold">S/L No.</th>
+                    <th scope="col" class="px-6 py-5 font-bold">Message</th>
+                    <th scope="col" class="px-6 py-5 font-bold">Type</th>
+                    <th scope="col" class="px-6 py-5 font-bold">System</th>
+                    <th scope="col" class="px-6 py-5 font-bold">Validity</th>
+                    <th scope="col" class="px-6 py-5 text-right font-bold pr-[4.5rem]">Actions</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-blue-50">
@@ -187,7 +187,7 @@
                       </td>
                       <td class="whitespace-nowrap px-6 py-4">
                         <span class="inline-flex rounded-md bg-indigo-50 px-3 py-1 text-xs font-semibold tracking-wide text-indigo-700 ring-1 ring-inset ring-indigo-200/60 shadow-sm transition-all group-hover:bg-indigo-100">
-                          {{ msg.messageType | uppercase }}
+                          {{ msg.messageType }}
                         </span>
                       </td>
                       <td class="whitespace-nowrap px-6 py-4 font-medium text-slate-600 group-hover:text-slate-800 transition-colors">{{ msg.systemName }}</td>
