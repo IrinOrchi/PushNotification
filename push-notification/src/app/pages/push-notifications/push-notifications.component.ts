@@ -10,7 +10,6 @@ import { ApiResponseMessage, ParsedMessageDetails } from '../../models/message.m
   styleUrl: './push-notifications.component.scss'
 })
 export class PushNotificationsComponent {
-  // Maintaining standard notification services just in case needed globally
   protected readonly notificationService = inject(PushNotificationService);
 
   activeTab = signal<'update' | 'panel'>('panel'); 
@@ -62,8 +61,8 @@ export class PushNotificationsComponent {
   protected setActiveTab(tab: 'update' | 'panel'): void {
     this.activeTab.set(tab);
     if (tab === 'panel') {
-      this.selectedMessageId.set(null); // Clear selection when leaving Update screen
-      this.updateStatus.set(null); // Clear status messages
+      this.selectedMessageId.set(null); 
+      this.updateStatus.set(null); 
     }
   }
 
@@ -81,7 +80,6 @@ export class PushNotificationsComponent {
 
   protected saveUpdate(event: Event): void {
     event.preventDefault();
-    // Setting dummy success status response mapped to ASP.NET equivalent Alert
     this.updateStatus.set('success');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => {
