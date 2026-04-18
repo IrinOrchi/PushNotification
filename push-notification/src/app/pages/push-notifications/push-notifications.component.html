@@ -1,0 +1,172 @@
+<main class="min-h-screen bg-slate-50 p-6 font-sans text-slate-600">
+  <div class="mx-auto max-w-6xl w-full">
+    <!-- Navigation / Header -->
+    <header class="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between transition-all duration-500">
+      <div>
+        <h1 class="bg-gradient-to-r from-cyan-600 to-indigo-600 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent drop-shadow-sm">
+          Notification Center
+        </h1>
+        <p class="mt-2 text-sm font-medium text-slate-500">Manage your push notifications and message panels beautifully.</p>
+      </div>
+
+      <!-- Nav Tabs -->
+      <nav class="flex w-full space-x-2 rounded-xl bg-slate-200/50 p-1.5 ring-1 ring-slate-200/60 backdrop-blur-md md:w-auto">
+        <button
+          (click)="setActiveTab('push')"
+          type="button"
+          [class]="activeTab() === 'push' ? 'bg-white text-cyan-700 shadow-sm ring-1 ring-slate-200/50 scale-[1.02]' : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
+          class="flex-1 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-cyan-500/30 md:flex-none"
+        >
+          Push Notification
+        </button>
+        <button
+          (click)="setActiveTab('panel')"
+          type="button"
+          [class]="activeTab() === 'panel' ? 'bg-white text-indigo-700 shadow-sm ring-1 ring-slate-200/50 scale-[1.02]' : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
+          class="flex-1 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-indigo-500/30 md:flex-none"
+        >
+          Message Insert Panel List
+        </button>
+      </nav>
+    </header>
+
+    <!-- Content Area -->
+    <section class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl shadow-indigo-100/50 sm:p-8">
+      <!-- Ambient Glows (Light Mode version) -->
+      <div class="pointer-events-none absolute -left-40 -top-40 h-96 w-96 rounded-full bg-cyan-100/50 blur-3xl transition-opacity duration-1000"></div>
+      <div class="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-indigo-100/50 blur-3xl transition-opacity duration-1000"></div>
+
+      <!-- Push Notification Tab -->
+      @if (activeTab() === 'push') {
+        <div class="relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+          <h2 class="text-2xl font-bold tracking-tight text-slate-800">Configuration</h2>
+          <div class="mt-6 inline-block rounded-2xl border border-slate-100 bg-slate-50/80 p-5 backdrop-blur-md transition-all hover:bg-slate-100/50 shadow-sm">
+            <div class="flex items-center gap-4">
+              <div class="relative flex h-4 w-4 items-center justify-center">
+                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60"></span>
+                <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.4)]"></span>
+              </div>
+              <p class="text-sm font-semibold tracking-wide text-slate-700">{{ statusMessage() }}</p>
+            </div>
+          </div>
+
+          @if (!isSupported) {
+            <div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm font-medium text-amber-800 shadow-sm inner-shadow-amber">
+              Use a modern browser (Chrome/Edge/Firefox) over HTTPS or localhost to enable notifications.
+            </div>
+          }
+
+          <div class="mt-10 flex flex-wrap gap-4">
+            <button
+              type="button"
+              class="group relative inline-flex items-center justify-center overflow-hidden rounded-xl bg-cyan-600 px-8 py-3 font-semibold text-white shadow-lg shadow-cyan-600/20 ring-1 ring-cyan-600/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-cyan-600/30 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-white disabled:pointer-events-none disabled:opacity-50"
+              [disabled]="!isSupported || permission() === 'granted'"
+              (click)="enableNotifications()"
+            >
+              <span class="absolute inset-0 h-full w-full bg-gradient-to-br from-cyan-400 to-blue-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></span>
+              <span class="relative flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:-translate-y-0.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                </svg>
+                Enable App Notifications
+              </span>
+            </button>
+
+            <button
+              type="button"
+              class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-8 py-3 font-semibold text-slate-700 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:ring-offset-2 focus:ring-offset-white disabled:pointer-events-none disabled:opacity-50"
+              [disabled]="permission() !== 'granted'"
+              (click)="sendTestNotification()"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
+              </svg>
+              Send Test Notification
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- Message Insert Panel List Tab -->
+      @if (activeTab() === 'panel') {
+        <div class="relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+          <div class="mb-6 flex items-center justify-between">
+            <h2 class="text-2xl font-bold tracking-tight text-slate-800">Panel Messages</h2>
+          </div>
+
+          <div class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-xl shadow-blue-900/5 transition-all">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm text-slate-600">
+                <thead class="bg-blue-50 text-xs uppercase tracking-wider text-blue-800 border-b border-blue-100">
+                  <tr>
+                    <th scope="col" class="px-6 py-5 font-semibold">S/L</th>
+                    <th scope="col" class="px-6 py-5 font-semibold">Message</th>
+                    <th scope="col" class="px-6 py-5 font-semibold">Type</th>
+                    <th scope="col" class="px-6 py-5 font-semibold">System</th>
+                    <th scope="col" class="px-6 py-5 font-semibold">Validity</th>
+                    <th scope="col" class="px-6 py-5 text-right font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-blue-50">
+                  @for (msg of messages(); track msg.id; let i = $index) {
+                    <tr class="group transition-colors duration-200 hover:bg-blue-50/50" [class.bg-white]="i % 2 === 0" [class.bg-slate-50/50]="i % 2 !== 0">
+                      <td class="whitespace-nowrap px-6 py-4 font-semibold text-blue-600/80 group-hover:text-blue-700 transition-colors">{{ i + 1 }}</td>
+                      <td class="px-6 py-4">
+                        <div class="max-w-[16rem] truncate font-medium text-slate-700 transition-colors group-hover:text-slate-900" [title]="msg.message">{{ msg.message }}</div>
+                      </td>
+                      <td class="whitespace-nowrap px-6 py-4">
+                        <span class="inline-flex rounded-md bg-indigo-50 px-3 py-1 text-xs font-semibold tracking-wide text-indigo-700 ring-1 ring-inset ring-indigo-200/60 shadow-sm transition-all group-hover:bg-indigo-100">
+                          {{ msg.type }}
+                        </span>
+                      </td>
+                      <td class="whitespace-nowrap px-6 py-4 font-medium text-slate-600 group-hover:text-slate-800 transition-colors">{{ msg.system }}</td>
+                      <td class="whitespace-nowrap px-6 py-4">
+                        @if (msg.validity) {
+                          <span class="inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200 shadow-sm transition-all group-hover:bg-emerald-100">
+                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.4)] animate-pulse"></span>
+                            Valid
+                          </span>
+                        } @else {
+                          <span class="inline-flex items-center gap-2 rounded-md bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 ring-1 ring-inset ring-rose-200 shadow-sm transition-all group-hover:bg-rose-100">
+                            <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+                            Expired
+                          </span>
+                        }
+                      </td>
+                      <td class="whitespace-nowrap px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2 opacity-80 transition-opacity duration-200 group-hover:opacity-100">
+                          @if (msg.validity) {
+                            <button type="button" class="inline-flex items-center rounded-lg bg-cyan-50 px-3 py-1.5 text-xs font-semibold text-cyan-700 transition-all hover:scale-105 hover:bg-cyan-100 hover:text-cyan-800 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
+                              Send Message
+                            </button>
+                          }
+                          <button type="button" class="inline-flex items-center rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-all hover:scale-105 hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+                            Edit
+                          </button>
+                          <button type="button" (click)="deleteMessage(msg.id)" class="inline-flex items-center rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition-all hover:scale-105 hover:bg-rose-100 hover:text-rose-800 focus:outline-none focus:ring-2 focus:ring-rose-500/40">
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="px-6 py-12 text-center">
+                        <div class="flex flex-col items-center justify-center gap-3">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                          </svg>
+                          <p class="text-sm font-medium text-slate-500">No messages found.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+  </div>
+</main>
