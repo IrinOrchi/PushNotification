@@ -72,9 +72,21 @@ export class PushNotificationsComponent {
     this.activeTab.set('update');
   }
 
-  protected deleteMessage(id: number): void {
-    if (confirm("Are you sure that you want to Delete the row?")) {
+  messageToDelete = signal<number | null>(null);
+
+  protected confirmDeletePrompt(id: number): void {
+    this.messageToDelete.set(id);
+  }
+
+  protected cancelDelete(): void {
+    this.messageToDelete.set(null);
+  }
+
+  protected confirmDelete(): void {
+    const id = this.messageToDelete();
+    if (id !== null) {
       this.messages.update(msgs => msgs.filter(m => m.messageID !== id));
+      this.messageToDelete.set(null);
     }
   }
 
