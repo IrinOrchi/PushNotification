@@ -185,8 +185,31 @@ export class PushNotificationsComponent implements OnInit {
   protected confirmDelete(): void {
     const id = this.messageToDelete();
     if (id !== null) {
-      this.messages.update(msgs => msgs.filter(m => m.messageID !== id));
-      this.messageToDelete.set(null);
+      this.notificationService.deleteUserMessage(id).subscribe({
+        next: (successMsg) => {
+          this.updateSuccessMessage.set(successMsg);
+          this.updateStatus.set('success');
+          this.messages.update((msgs) => msgs.filter((m) => m.messageID !== id));
+          if (this.selectedMessageId() === id) {
+            this.selectedMessageId.set(null);
+            this.activeTab.set('panel');
+          }
+          this.messageToDelete.set(null);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          // setTimeout(() => {
+          //   if (this.updateStatus() === 'success') {
+          //     this.clearUpdateFeedback();
+          //   }
+          // }, 3000);
+        },
+        error: (err) => {
+          const errMsg = this.notificationService.extractErrorMessage(err);
+          this.updateSuccessMessage.set(errMsg);
+          this.updateStatus.set('error');
+          this.messageToDelete.set(null);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
     }
   }
 
@@ -282,7 +305,7 @@ export class PushNotificationsComponent implements OnInit {
         next: (successText) => {
           this.updateSuccessMessage.set(successText);
           this.updateStatus.set('success');
-          this.loadMessageList(); // Refresh list to show new message
+          this.loadMessageList(); 
           window.scrollTo({ top: 0, behavior: 'smooth' });
           setTimeout(() => {
             if (this.updateStatus() === 'success') {

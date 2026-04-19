@@ -18,6 +18,9 @@ const UPDATE_USER_MESSAGE_URL =
 const CREATE_USER_MESSAGE_URL =
   'https://api.bdjobs.com/bdjobs-promotional-push/api/PromotionalPushNotification/CreateUserMessage';
 
+const DELETE_USER_MESSAGE_URL =
+  'https://api.bdjobs.com/bdjobs-promotional-push/api/PromotionalPushNotification/DeleteUserMessage';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -30,10 +33,7 @@ export class PushNotificationService {
       .pipe(map((body) => this.parseResponse(body)));
   }
 
-  /**
-   * Serializes inner fields to one JSON string for `messageDetails`.
-   * Call exactly once per request; HttpClient will JSON-encode the outer body only.
-   */
+  
   serializeMessageDetails(details: ParsedMessageDetails): string {
     const normalizeText = (s: string): string =>
       s
@@ -72,7 +72,19 @@ export class PushNotificationService {
       .pipe(map((response) => this.extractUpdateSuccessMessage(response)));
   }
 
-  /** Parses success/failure bodies based on eventId and eventType. */
+  deleteUserMessage(id: number): Observable<string> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json; charset=utf-8',
+      Accept: 'application/json'
+    });
+    return this.http
+      .delete<unknown>(DELETE_USER_MESSAGE_URL, {
+        headers,
+        body: { messageId: id }
+      })
+      .pipe(map((response) => this.extractUpdateSuccessMessage(response)));
+  }
+
   extractUpdateSuccessMessage(response: unknown): string {
     const fallback = 'Operation completed successfully.';
     const events = this.unwrapToEvents(response);
@@ -81,7 +93,8 @@ export class PushNotificationService {
       return fallback;
     }
 
-    const successEvent = events.find((e) => (Number(e.eventId) === 1000 || Number(e.eventId) === 1001) && Number(e.eventType) === 1);
+    // Check for success (1000: Create, 1001: Update, 1002: Delete)
+    const successEvent = events.find((e) => (Number(e.eventId) === 1000 || Number(e.eventId) === 1001 || Number(e.eventId) === 1002) && Number(e.eventType) === 1);
     if (successEvent) {
       const msg = this.pickMessage(successEvent);
       if (msg) return msg;
@@ -101,21 +114,17 @@ export class PushNotificationService {
     return fallback;
   }
 
-  /** Unified error extraction for both logical errors (200 OK) and HTTP errors (4xx/5xx). */
   extractErrorMessage(err: any): string {
     const defaultFail = 'An error occurred. Please try again.';
     if (!err) return defaultFail;
 
-    // If it's an Error thrown by our service (logical failure)
     if (err instanceof Error && err.message) {
       return err.message;
     }
 
-    // If it's an HttpErrorResponse
     const body = err.error;
     if (body) {
       try {
-        // Try parsing the error body using the same logic
         return this.extractUpdateSuccessMessage(body);
       } catch (logicalErr: any) {
         if (logicalErr instanceof Error) return logicalErr.message;
