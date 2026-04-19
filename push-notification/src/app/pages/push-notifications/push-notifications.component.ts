@@ -1,8 +1,9 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import { PushNotificationService } from '../../services/push-notification.service';
-import { ApiResponseMessage, ParsedMessageDetails } from '../../models/message.model';
+import { ApiResponseMessage } from '../../models/message.model';
 
 @Component({
   selector: 'app-push-notifications',
@@ -15,18 +16,43 @@ export class PushNotificationsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  activeTab = signal<'update' | 'panel'>('panel'); 
+  activeTab = signal<'update' | 'panel'>('panel');
   searchQuery = signal<string>('');
   selectedMessageId = signal<number | null>(null);
+  isLoadingList = signal(false);
+  listLoadError = signal<string | null>(null);
 
   ngOnInit(): void {
+    this.loadMessageList();
+  }
+
+  protected loadMessageList(): void {
+    this.isLoadingList.set(true);
+    this.listLoadError.set(null);
+    this.notificationService
+      .getUserMessageList()
+      .pipe(finalize(() => this.isLoadingList.set(false)))
+      .subscribe({
+        next: (messages) => {
+          this.messages.set(messages);
+          this.applyDeepLinkFromRoute(messages);
+        },
+        error: () => {
+          this.listLoadError.set('Could not load messages. Check your connection or try again later.');
+        }
+      });
+  }
+
+  private applyDeepLinkFromRoute(messages: ApiResponseMessage[]): void {
     const params = this.route.snapshot.queryParams;
     const tab = params['tab'];
     const msgId = params['msgId'];
-
     if (tab === 'update' && msgId) {
-      this.activeTab.set('update');
-      this.selectedMessageId.set(+msgId);
+      const id = +msgId;
+      if (messages.some((m) => m.messageID === id)) {
+        this.activeTab.set('update');
+        this.selectedMessageId.set(id);
+      }
     }
   }
 
@@ -38,41 +64,7 @@ export class PushNotificationsComponent implements OnInit {
 
   updateStatus = signal<'success' | 'error' | null>(null);
 
-  messages = signal<ApiResponseMessage[]>(this.initializeData([
-    {
-      messageID: 18,
-      messageNo: 1,
-      messageDetails: '{"msgTitle":"bdjobs-amcat Certification Test ","msg":"যেকোনো স্থান থেকেই সার্টিফিকেশন টেস্ট দিন একদম বিনামূল্যে! ওয়েবক্যাম সহ ল্যাপটপ অথবা ডেস্কটপের মাধ্যমে ঘরে বসেই সার্টিফিকেশন টেস্টটি দিন এবং সহজেই নিজের দক্ষতা যাচাই করুন।","imgSrc":"https://bdjobs.com/NotificationMessageimages/bdjobs-amcat-Certification-Test-banner.png/","link":"https://mybdjobs.bdjobs.com/bn/mybdjobs/assessment/smnt_certification_helpbn.asp/","activityNode":"/","LogoSrc":"/"}',
-      messageType: "pm",
-      systemName: "Assessment",
-      valid: 0
-    },
-    {
-      messageID: 55,
-      messageNo: 2,
-      messageDetails: '{"msgTitle":"bdjobs-amcat Certification Test Report is Ready!","msg":"Your bdjobs-amcat Certificate test result with details report is ready. Click to see details","imgSrc":"","link":"https://mybdjobs.bdjobs.com/mybdjobs/assessment/smnt_certification_complete_examlist.asp/"}',
-      messageType: "pm",
-      systemName: "assessment",
-      valid: 1
-    },
-    {
-      messageID:20,
-      messageNo: 3,
-      messageDetails: '{"msgTitle":"bdjobs-amcat Certification Test Report is Ready!","msg":"Your bdjobs-amcat Certificate test result with details report is ready. Click to see details","imgSrc":"","link":"https://mybdjobs.bdjobs.com/mybdjobs/assessment/smnt_certification_complete_examlist.asp/"}',
-      messageType: "message",
-      systemName: "assessment",
-      valid: 1
-    },
-    {
-      messageID: 17,
-      messageNo: 4,
-      messageDetails: '{"msgTitle":"bdjobs-amcat Certification Test ","msg":"যেকোনো স্থান থেকেই সার্টিফিকেশন টেস্ট দিন একদম বিনামূল্যে! ওয়েবক্যাম সহ ল্যাপটপ অথবা ডেস্কটপের মাধ্যমে ঘরে বসেই সার্টিফিকেশন টেস্টটি দিন এবং সহজেই নিজের দক্ষতা যাচাই করুন।","imgSrc":"https://bdjobs.com/NotificationMessageimages/bdjobs-amcat-Certification-Test-banner.png/","link":"https://mybdjobs.bdjobs.com/bn/mybdjobs/assessment/smnt_certification_helpbn.asp/","activityNode":"/","LogoSrc":"/"}',
-      messageType: "pm",
-      systemName: "Assessment",
-      valid: 0
-    },
-
-  ]));
+  messages = signal<ApiResponseMessage[]>([]);
 
   filteredMessages = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
@@ -84,17 +76,6 @@ export class PushNotificationsComponent implements OnInit {
       return idMatch || titleMatch;
     });
   });
-
-  private initializeData(data: ApiResponseMessage[]): ApiResponseMessage[] {
-    return data.map(item => {
-      try {
-        item.parsedDetails = JSON.parse(item.messageDetails);
-      } catch (e) {
-        item.parsedDetails = { msg: item.messageDetails };
-      }
-      return item;
-    });
-  }
 
   protected setActiveTab(tab: 'update' | 'panel'): void {
     this.activeTab.set(tab);

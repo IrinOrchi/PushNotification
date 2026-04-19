@@ -189,6 +189,25 @@
             </div>
           </div>
 
+          @if (listLoadError(); as loadErr) {
+            <div class="mb-6 flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50/80 p-5 text-rose-900 sm:flex-row sm:items-center sm:justify-between">
+              <p class="text-sm font-medium leading-relaxed">{{ loadErr }}</p>
+              <button
+                type="button"
+                (click)="loadMessageList()"
+                class="shrink-0 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-rose-800 shadow-sm ring-1 ring-rose-200 transition hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-rose-400/40"
+              >
+                Try again
+              </button>
+            </div>
+          } @else if (isLoadingList()) {
+            <div class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 py-16 text-slate-500">
+              <div class="h-9 w-9 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" aria-hidden="true"></div>
+              <p class="text-sm font-medium">Loading messages…</p>
+            </div>
+          }
+
+          @if (!isLoadingList() && !listLoadError()) {
           <div class="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-xl shadow-blue-900/5 transition-all">
             <div class="overflow-x-auto">
               <table class="w-full text-left text-sm text-slate-600">
@@ -260,6 +279,7 @@
               </table>
             </div>
           </div>
+          }
         </div>
       }
     </section>
