@@ -5,6 +5,8 @@ import {
   ApiResponseMessage,
   CreateUserMessageRequest,
   ParsedMessageDetails,
+  SendNotificationRequest,
+  SendNotificationResult,
   UpdateUserMessageEvent,
   UpdateUserMessageRequest
 } from '../models/message.model';
@@ -20,6 +22,9 @@ const CREATE_USER_MESSAGE_URL =
 
 const DELETE_USER_MESSAGE_URL =
   'https://api.bdjobs.com/bdjobs-promotional-push/api/PromotionalPushNotification/DeleteUserMessage';
+
+const SEND_NOTIFICATION_URL =
+  'https://api.bdjobs.com/bdjobs-promotional-push/api/PromotionalPushNotification/SendNotification';
 
 @Injectable({
   providedIn: 'root'
@@ -83,6 +88,36 @@ export class PushNotificationService {
         body: { messageId: id }
       })
       .pipe(map((response) => this.extractUpdateSuccessMessage(response)));
+  }
+
+  sendNotificationBatch(args: SendNotificationRequest): Observable<SendNotificationResult> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json; charset=utf-8',
+      Accept: 'application/json'
+    });
+    return this.http
+      .post<unknown>(SEND_NOTIFICATION_URL, args, { headers })
+      .pipe(map((response) => this.extractSendNotificationResult(response)));
+  }
+
+  private extractSendNotificationResult(response: unknown): SendNotificationResult {
+    const events = this.unwrapToEvents(response);
+    const successEvent = events.find((e) => (Number(e.eventId) === 1001) && Number(e.eventType) === 1);
+    
+    if (successEvent) {
+      const data = successEvent.eventData.find(d => d.key === 'message');
+      if (data && typeof data.value === 'object') {
+        return data.value as SendNotificationResult;
+      }
+    }
+
+    const failureEvent = events.find((e) => Number(e.eventType) === 2);
+    if (failureEvent) {
+      const msg = this.pickMessage(failureEvent);
+      throw new Error(msg || 'Failed to send notification batch.');
+    }
+
+    throw new Error('Could not parse send notification result.');
   }
 
   extractUpdateSuccessMessage(response: unknown): string {

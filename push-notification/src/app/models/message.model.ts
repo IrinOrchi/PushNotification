@@ -24,7 +24,17 @@ export interface CreateUserMessageRequest {
   valid: number;
 }
 
-/** Body for `UpdateUserMessage` — `messageDetails` is a JSON string of `ParsedMessageDetails`. */
+export interface SendNotificationRequest {
+  messageID: number;
+  pageNo: number;
+  batchSize: number;
+}
+
+export interface SendNotificationResult {
+  message: string;
+  totalSent: number;
+}
+
 export interface UpdateUserMessageRequest {
   messageID: number;
   messageDetails: string;
@@ -33,10 +43,9 @@ export interface UpdateUserMessageRequest {
   valid: number;
 }
 
-/** One entry from `UpdateUserMessage` success payload (event list). */
 export interface UpdateUserMessageEventData {
   key: string;
-  value: string;
+  value: any;
 }
 
 export interface UpdateUserMessageEvent {

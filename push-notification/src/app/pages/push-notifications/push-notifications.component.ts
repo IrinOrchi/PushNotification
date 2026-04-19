@@ -79,6 +79,9 @@ export class PushNotificationsComponent implements OnInit {
   updateStatus = signal<'success' | 'error' | null>(null);
   updateSuccessMessage = signal<string | null>(null);
   isSavingUpdate = signal(false);
+  
+  isSendingBulk = signal(false);
+  bulkSentCumulative = signal(0);
 
   updateDraft = signal<UpdatePanelDraft | null>(null);
   createDraft = signal<UpdatePanelDraft>({
@@ -315,6 +318,47 @@ export class PushNotificationsComponent implements OnInit {
           }, 3000);
         },
         error: (err: any) => {
+          const errMsg = this.notificationService.extractErrorMessage(err);
+          this.updateSuccessMessage.set(errMsg);
+          this.updateStatus.set('error');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+  }
+
+  protected startBulkSend(messageID: number): void {
+    if (this.isSendingBulk()) return;
+    this.isSendingBulk.set(true);
+    this.bulkSentCumulative.set(0);
+    this.clearUpdateFeedback();
+    this.processBatch(messageID, 0);
+  }
+
+  private processBatch(messageID: number, currentSum: number): void {
+    this.notificationService
+      .sendNotificationBatch({
+        messageID,
+        pageNo: 1, // Fixed to page 1 per requirement
+        batchSize: 250
+      })
+      .subscribe({
+        next: (res) => {
+          const batchSent = res.totalSent;
+          const newSum = currentSum + batchSent;
+          this.bulkSentCumulative.set(newSum);
+
+          if (batchSent < 250) {
+            this.isSendingBulk.set(false);
+            this.updateStatus.set('success');
+            this.updateSuccessMessage.set(`Notification sent successfully. Total sent: ${newSum}`);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            // Recurse with current sum
+            this.processBatch(messageID, newSum);
+          }
+        },
+        error: (err) => {
+          this.isSendingBulk.set(false);
           const errMsg = this.notificationService.extractErrorMessage(err);
           this.updateSuccessMessage.set(errMsg);
           this.updateStatus.set('error');
