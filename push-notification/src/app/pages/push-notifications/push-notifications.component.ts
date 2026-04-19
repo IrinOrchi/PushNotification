@@ -1,5 +1,6 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PushNotificationService } from '../../services/push-notification.service';
 import { ApiResponseMessage, ParsedMessageDetails } from '../../models/message.model';
 
@@ -9,12 +10,25 @@ import { ApiResponseMessage, ParsedMessageDetails } from '../../models/message.m
   templateUrl: './push-notifications.component.html',
   styleUrl: './push-notifications.component.scss'
 })
-export class PushNotificationsComponent {
+export class PushNotificationsComponent implements OnInit {
   protected readonly notificationService = inject(PushNotificationService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   activeTab = signal<'update' | 'panel'>('panel'); 
   searchQuery = signal<string>('');
   selectedMessageId = signal<number | null>(null);
+
+  ngOnInit(): void {
+    const params = this.route.snapshot.queryParams;
+    const tab = params['tab'];
+    const msgId = params['msgId'];
+
+    if (tab === msgId) {
+      // this.activeTab.set('update');
+      this.selectedMessageId.set(+msgId);
+    }
+  }
 
   selectedMessage = computed(() => {
     const id = this.selectedMessageId();
@@ -27,6 +41,7 @@ export class PushNotificationsComponent {
   messages = signal<ApiResponseMessage[]>(this.initializeData([
     {
       messageID: 18,
+      messageNo: 1,
       messageDetails: '{"msgTitle":"bdjobs-amcat Certification Test ","msg":"যেকোনো স্থান থেকেই সার্টিফিকেশন টেস্ট দিন একদম বিনামূল্যে! ওয়েবক্যাম সহ ল্যাপটপ অথবা ডেস্কটপের মাধ্যমে ঘরে বসেই সার্টিফিকেশন টেস্টটি দিন এবং সহজেই নিজের দক্ষতা যাচাই করুন।","imgSrc":"https://bdjobs.com/NotificationMessageimages/bdjobs-amcat-Certification-Test-banner.png/","link":"https://mybdjobs.bdjobs.com/bn/mybdjobs/assessment/smnt_certification_helpbn.asp/","activityNode":"/","LogoSrc":"/"}',
       messageType: "pm",
       systemName: "Assessment",
@@ -34,6 +49,7 @@ export class PushNotificationsComponent {
     },
     {
       messageID: 55,
+      messageNo: 2,
       messageDetails: '{"msgTitle":"bdjobs-amcat Certification Test Report is Ready!","msg":"Your bdjobs-amcat Certificate test result with details report is ready. Click to see details","imgSrc":"","link":"https://mybdjobs.bdjobs.com/mybdjobs/assessment/smnt_certification_complete_examlist.asp/"}',
       messageType: "pm",
       systemName: "assessment",
@@ -41,6 +57,7 @@ export class PushNotificationsComponent {
     },
     {
       messageID:20,
+      messageNo: 3,
       messageDetails: '{"msgTitle":"bdjobs-amcat Certification Test Report is Ready!","msg":"Your bdjobs-amcat Certificate test result with details report is ready. Click to see details","imgSrc":"","link":"https://mybdjobs.bdjobs.com/mybdjobs/assessment/smnt_certification_complete_examlist.asp/"}',
       messageType: "message",
       systemName: "assessment",
@@ -48,6 +65,7 @@ export class PushNotificationsComponent {
     },
     {
       messageID: 17,
+      messageNo: 4,
       messageDetails: '{"msgTitle":"bdjobs-amcat Certification Test ","msg":"যেকোনো স্থান থেকেই সার্টিফিকেশন টেস্ট দিন একদম বিনামূল্যে! ওয়েবক্যাম সহ ল্যাপটপ অথবা ডেস্কটপের মাধ্যমে ঘরে বসেই সার্টিফিকেশন টেস্টটি দিন এবং সহজেই নিজের দক্ষতা যাচাই করুন।","imgSrc":"https://bdjobs.com/NotificationMessageimages/bdjobs-amcat-Certification-Test-banner.png/","link":"https://mybdjobs.bdjobs.com/bn/mybdjobs/assessment/smnt_certification_helpbn.asp/","activityNode":"/","LogoSrc":"/"}',
       messageType: "pm",
       systemName: "Assessment",
@@ -82,7 +100,8 @@ export class PushNotificationsComponent {
     this.activeTab.set(tab);
     if (tab === 'panel') {
       this.selectedMessageId.set(null); 
-      this.updateStatus.set(null); 
+      this.updateStatus.set(null);
+      this.router.navigate([], { queryParams: {} });
     }
   }
 
@@ -94,6 +113,7 @@ export class PushNotificationsComponent {
     this.selectedMessageId.set(id);
     this.updateStatus.set(null);
     this.activeTab.set('update');
+    this.router.navigate([], { queryParams: { msgId: id }, queryParamsHandling: 'merge' });
   }
 
   messageToDelete = signal<number | null>(null);

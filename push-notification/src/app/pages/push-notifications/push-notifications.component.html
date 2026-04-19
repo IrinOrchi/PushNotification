@@ -117,6 +117,11 @@
                     <input type="text" id="AppScreen" name="AppScreen" [value]="msg.parsedDetails?.activityNode || ''" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                   </div>
 
+                  <div class="col-span-1">
+                    <label for="messageNo" class="mb-1.5 block text-sm font-semibold text-slate-700">Message No <span class="text-rose-500">*</span></label>
+                    <input type="number" id="messageNo" name="messageNo" [value]="msg.messageNo" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                  </div>
+
                   <div class="col-span-1 md:col-span-2 pt-4">
                     <label class="relative inline-flex cursor-pointer items-center gap-3 select-none">
                       <input type="checkbox" name="validCheckBox" id="validCheckBox" [checked]="msg.valid === 1" class="peer sr-only">
@@ -206,7 +211,7 @@
                           <div><span class="font-semibold text-slate-800">Message: </span>{{ msg.parsedDetails?.msg }}</div>
                           <div><span class="font-semibold text-slate-800">MessageType: </span>{{ msg.messageType }}</div>
                           <div><span class="font-semibold text-slate-800">SystemName: </span>{{ msg.systemName }}</div>
-                          <div><span class="font-semibold text-slate-800">Message No: </span>{{ i + 1 }}</div>
+                          <div><span class="font-semibold text-slate-800">Message No: </span>{{ msg.messageNo }}</div>
 
                         </div>
                       </td>

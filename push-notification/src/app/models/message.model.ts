@@ -9,6 +9,7 @@ export interface ParsedMessageDetails {
 
 export interface ApiResponseMessage {
   messageID: number;
+  messageNo: number;
   messageDetails: string;
   parsedDetails?: ParsedMessageDetails;
   messageType: string;
