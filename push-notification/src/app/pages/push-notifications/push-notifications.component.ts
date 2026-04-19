@@ -13,6 +13,7 @@ export class PushNotificationsComponent {
   protected readonly notificationService = inject(PushNotificationService);
 
   activeTab = signal<'update' | 'panel'>('panel'); 
+  searchQuery = signal<string>('');
   selectedMessageId = signal<number | null>(null);
 
   selectedMessage = computed(() => {
@@ -55,6 +56,17 @@ export class PushNotificationsComponent {
 
   ]));
 
+  filteredMessages = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.messages();
+    
+    return this.messages().filter(m => {
+      const idMatch = m.messageID.toString().includes(query);
+      const titleMatch = m.parsedDetails?.msgTitle?.toLowerCase().includes(query) || false;
+      return idMatch || titleMatch;
+    });
+  });
+
   private initializeData(data: ApiResponseMessage[]): ApiResponseMessage[] {
     return data.map(item => {
       try {
@@ -72,6 +84,10 @@ export class PushNotificationsComponent {
       this.selectedMessageId.set(null); 
       this.updateStatus.set(null); 
     }
+  }
+
+  updateSearch(event: Event): void {
+    this.searchQuery.set((event.target as HTMLInputElement).value);
   }
 
   protected editMessage(id: number): void {
