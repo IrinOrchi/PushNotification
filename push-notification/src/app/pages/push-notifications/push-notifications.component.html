@@ -20,6 +20,14 @@
         Message Update Panel
         </button>
         <button
+          (click)="setActiveTab('create')"
+          type="button"
+          [class]="activeTab() === 'create' ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-slate-200/50 scale-[1.02]' : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
+          class="flex-1 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30 md:flex-none"
+        >
+          Create New
+        </button>
+        <button
           (click)="setActiveTab('panel')"
           type="button"
           [class]="activeTab() === 'panel' ? 'bg-white text-indigo-700 shadow-sm ring-1 ring-slate-200/50 scale-[1.02]' : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
@@ -130,15 +138,9 @@
                     <input type="text" id="LogoSrc" name="LogoSrc" [(ngModel)]="d.logoSrc" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                   </div>
 
-                  <div class="col-span-1 md:col-span-2 grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div>
-                      <label for="messageNo" class="mb-1.5 block text-sm font-semibold text-slate-700">Message No <span class="text-rose-500">*</span></label>
-                      <input type="number" id="messageNo" name="messageNo" [(ngModel)]="d.messageNo" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
-                    </div>
-                    <div>
-                      <label for="activityNode" class="mb-1.5 block text-sm font-semibold text-slate-700">Activity Node</label>
-                      <input type="text" id="activityNode" name="activityNode" [(ngModel)]="d.activityNode" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
-                    </div>
+                  <div class="col-span-1">
+                    <label for="activityNode" class="mb-1.5 block text-sm font-semibold text-slate-700">Activity Node</label>
+                    <input type="text" id="activityNode" name="activityNode" [(ngModel)]="d.activityNode" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                   </div>
 
                   <div class="col-span-1 md:col-span-2 pt-4">
@@ -183,11 +185,138 @@
         </div>
       }
 
+      <!-- Create New Tab -->
+      @if (activeTab() === 'create') {
+        <div class="relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+          <div class="mb-6 flex items-center justify-between">
+            <h2 class="text-2xl font-bold tracking-tight text-slate-800">Create New Message</h2>
+            <button (click)="setActiveTab('panel')" class="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 font-medium transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to List
+            </button>
+          </div>
+          
+          <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-6 md:p-8 shadow-sm transition-all">
+            @if (updateStatus() === 'success') {
+              <div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 shadow-sm flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+                <div class="flex items-center gap-3">
+                  <div class="rounded-full bg-emerald-200/50 p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <strong class="font-semibold block text-emerald-900">Success!</strong>
+                    <span class="text-sm opacity-90">{{ updateSuccessMessage() ?? 'Message created successfully.' }}</span>
+                  </div>
+                </div>
+                <button type="button" (click)="clearUpdateFeedback()" class="text-emerald-600 hover:text-emerald-800 focus:outline-none">&times;</button>
+              </div>
+            }
+
+            @if (updateStatus() === 'error') {
+              <div class="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800 shadow-sm flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+                <div class="flex items-center gap-3">
+                  <div class="rounded-full bg-rose-200/50 p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-600" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <strong class="font-semibold block text-rose-900">Creation failed</strong>
+                    <span class="text-sm opacity-90">Could not create message. Please try again.</span>
+                  </div>
+                </div>
+                <button type="button" (click)="clearUpdateFeedback()" class="text-rose-600 hover:text-rose-800 focus:outline-none">&times;</button>
+              </div>
+            }
+
+            <form (ngSubmit)="saveCreate()" class="space-y-6">
+              <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div class="col-span-1 md:col-span-2">
+                  <label for="newMsgTitle" class="mb-1.5 block text-sm font-semibold text-slate-700">Message Title <span class="text-rose-500">*</span></label>
+                  <input type="text" id="newMsgTitle" name="msgTitle" [(ngModel)]="createDraft().msgTitle" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                </div>
+
+                <div class="col-span-1 md:col-span-2">
+                  <label for="newMessage" class="mb-1.5 block text-sm font-semibold text-slate-700">Message <span class="text-rose-500">*</span></label>
+                  <textarea id="newMessage" name="message" rows="4" [(ngModel)]="createDraft().msg" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-700 shadow-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"></textarea>
+                </div>
+
+                <div class="col-span-1">
+                  <label for="newMsgType" class="mb-1.5 block text-sm font-semibold text-slate-700">Message Type <span class="text-rose-500">*</span></label>
+                  <input type="text" id="newMsgType" name="msgType" [(ngModel)]="createDraft().messageType" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                </div>
+
+                <div class="col-span-1">
+                  <label for="newSysName" class="mb-1.5 block text-sm font-semibold text-slate-700">System Name <span class="text-rose-500">*</span></label>
+                  <input type="text" id="newSysName" name="sysName" [(ngModel)]="createDraft().systemName" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                </div>
+
+                <div class="col-span-1">
+                  <label for="newImgSrc" class="mb-1.5 block text-sm font-semibold text-slate-700">Image Source</label>
+                  <input type="url" id="newImgSrc" name="imgSrc" [(ngModel)]="createDraft().imgSrc" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" placeholder="https://...">
+                </div>
+
+                <div class="col-span-1">
+                  <label for="newLink" class="mb-1.5 block text-sm font-semibold text-slate-700">Forward Link <span class="text-rose-500">*</span></label>
+                  <input type="url" id="newLink" name="link" [(ngModel)]="createDraft().link" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" placeholder="https://...">
+                </div>
+
+                <div class="col-span-1">
+                  <label for="newLogoSrc" class="mb-1.5 block text-sm font-semibold text-slate-700">Logo Source</label>
+                  <input type="text" id="newLogoSrc" name="LogoSrc" [(ngModel)]="createDraft().logoSrc" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                </div>
+
+                <div class="col-span-1">
+                  <label for="newActivityNode" class="mb-1.5 block text-sm font-semibold text-slate-700">Activity Node</label>
+                  <input type="text" id="newActivityNode" name="activityNode" [(ngModel)]="createDraft().activityNode" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                </div>
+
+                <div class="col-span-1 md:col-span-2 pt-4">
+                  <label class="relative inline-flex cursor-pointer items-center gap-3 select-none">
+                    <input type="checkbox" name="validActive" id="newValidCheckBox" [(ngModel)]="createDraft().valid" class="peer sr-only">
+                    <div class="relative h-6 w-11 rounded-full bg-slate-300 peer-checked:bg-emerald-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-all after:content-[''] peer-checked:after:translate-x-full transition-colors duration-200"></div>
+                    <span class="text-sm font-semibold text-slate-700">Check Validity (Active)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="mt-8 flex items-center justify-end gap-3 border-t border-slate-200 pt-6">
+                <button type="button" (click)="setActiveTab('panel')" [disabled]="isSavingUpdate()" class="rounded-xl px-6 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-200 disabled:opacity-50 disabled:pointer-events-none">
+                  Cancel
+                </button>
+                <button type="submit" [disabled]="isSavingUpdate()" class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-8 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-200 transition-all hover:bg-emerald-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">
+                  @if (isSavingUpdate()) {
+                    <span>Creating…</span>
+                  } @else {
+                    <span>Create Notification</span>
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
       <!-- Message Insert Panel List Tab -->
       @if (activeTab() === 'panel') {
         <div class="relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 class="text-2xl font-bold tracking-tight text-slate-800">Panel Messages</h2>
+            <div class="flex items-center gap-4">
+              <h2 class="text-2xl font-bold tracking-tight text-slate-800">Panel Messages</h2>
+              <button 
+                (click)="setActiveTab('create')"
+                class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:bg-emerald-700 hover:scale-105 active:scale-95"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M12 4v16m8-8H4" />
+                </svg>
+                Create New
+              </button>
+            </div>
             
             <!-- Search Filter -->
             <div class="relative w-full sm:max-w-xs md:max-w-md">

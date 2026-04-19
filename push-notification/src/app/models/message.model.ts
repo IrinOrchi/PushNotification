@@ -17,6 +17,13 @@ export interface ApiResponseMessage {
   valid: number;
 }
 
+export interface CreateUserMessageRequest {
+  messageDetails: string;
+  messageType: string;
+  systemName: string;
+  valid: number;
+}
+
 /** Body for `UpdateUserMessage` — `messageDetails` is a JSON string of `ParsedMessageDetails`. */
 export interface UpdateUserMessageRequest {
   messageID: number;

@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import {
   ApiResponseMessage,
+  CreateUserMessageRequest,
   ParsedMessageDetails,
   UpdateUserMessageEvent,
   UpdateUserMessageRequest
@@ -13,6 +14,9 @@ const USER_MESSAGE_LIST_URL =
 
 const UPDATE_USER_MESSAGE_URL =
   'https://api.bdjobs.com/bdjobs-promotional-push/api/PromotionalPushNotification/UpdateUserMessage';
+
+const CREATE_USER_MESSAGE_URL =
+  'https://api.bdjobs.com/bdjobs-promotional-push/api/PromotionalPushNotification/CreateUserMessage';
 
 @Injectable({
   providedIn: 'root'
@@ -55,6 +59,16 @@ export class PushNotificationService {
     });
     return this.http
       .put<unknown>(UPDATE_USER_MESSAGE_URL, body, { headers })
+      .pipe(map((response) => this.extractUpdateSuccessMessage(response)));
+  }
+
+  createUserMessage(body: CreateUserMessageRequest): Observable<string> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json; charset=utf-8',
+      Accept: 'application/json'
+    });
+    return this.http
+      .post<unknown>(CREATE_USER_MESSAGE_URL, body, { headers })
       .pipe(map((response) => this.extractUpdateSuccessMessage(response)));
   }
 

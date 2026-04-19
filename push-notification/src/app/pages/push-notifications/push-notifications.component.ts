@@ -16,7 +16,6 @@ export interface UpdatePanelDraft {
   link: string;
   logoSrc: string;
   activityNode: string;
-  messageNo: number;
   valid: boolean;
 }
 
@@ -31,7 +30,7 @@ export class PushNotificationsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  activeTab = signal<'update' | 'panel'>('panel');
+  activeTab = signal<'update' | 'panel' | 'create'>('panel');
   searchQuery = signal<string>('');
   selectedMessageId = signal<number | null>(null);
   isLoadingList = signal(false);
@@ -82,6 +81,17 @@ export class PushNotificationsComponent implements OnInit {
   isSavingUpdate = signal(false);
 
   updateDraft = signal<UpdatePanelDraft | null>(null);
+  createDraft = signal<UpdatePanelDraft>({
+    msgTitle: '',
+    msg: '',
+    messageType: '',
+    systemName: '',
+    imgSrc: '',
+    link: '',
+    logoSrc: '',
+    activityNode: '',
+    valid: true
+  });
 
   messages = signal<ApiResponseMessage[]>([]);
 
@@ -101,7 +111,6 @@ export class PushNotificationsComponent implements OnInit {
         link: msg.parsedDetails?.link ?? '',
         logoSrc: msg.parsedDetails?.LogoSrc ?? '',
         activityNode: msg.parsedDetails?.activityNode ?? '',
-        messageNo: msg.messageNo,
         valid: msg.valid === 1
       });
     });
@@ -123,13 +132,32 @@ export class PushNotificationsComponent implements OnInit {
     this.updateSuccessMessage.set(null);
   }
 
-  protected setActiveTab(tab: 'update' | 'panel'): void {
+  protected setActiveTab(tab: 'update' | 'panel' | 'create'): void {
     this.activeTab.set(tab);
     if (tab === 'panel') {
       this.selectedMessageId.set(null);
       this.clearUpdateFeedback();
       this.router.navigate([], { queryParams: {} });
+    } else if (tab === 'create') {
+      this.selectedMessageId.set(null);
+      this.clearUpdateFeedback();
+      this.router.navigate([], { queryParams: { tab: 'create' } });
+      this.resetCreateDraft();
     }
+  }
+
+  private resetCreateDraft(): void {
+    this.createDraft.set({
+      msgTitle: '',
+      msg: '',
+      messageType: '',
+      systemName: '',
+      imgSrc: '',
+      link: '',
+      logoSrc: '',
+      activityNode: '',
+      valid: true
+    });
   }
 
   updateSearch(event: Event): void {
@@ -168,8 +196,6 @@ export class PushNotificationsComponent implements OnInit {
       return;
     }
 
-    const messageNo = Number(draft.messageNo);
-
     const inner: ParsedMessageDetails = {
       msgTitle: draft.msgTitle.trim(),
       msg: draft.msg,
@@ -200,7 +226,6 @@ export class PushNotificationsComponent implements OnInit {
               m.messageID === msg.messageID
                 ? {
                     ...m,
-                    messageNo: Number.isFinite(messageNo) ? messageNo : m.messageNo,
                     messageType: draft.messageType,
                     systemName: draft.systemName,
                     valid: draft.valid ? 1 : 0,
@@ -217,6 +242,52 @@ export class PushNotificationsComponent implements OnInit {
               this.clearUpdateFeedback();
             }
           }, 4000);
+        },
+        error: () => {
+          this.updateSuccessMessage.set(null);
+          this.updateStatus.set('error');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+  }
+
+  protected saveCreate(): void {
+    const draft = this.createDraft();
+    if (this.isSavingUpdate()) return;
+
+    const inner: ParsedMessageDetails = {
+      msgTitle: draft.msgTitle.trim(),
+      msg: draft.msg,
+      imgSrc: draft.imgSrc,
+      link: draft.link,
+      activityNode: draft.activityNode,
+      LogoSrc: draft.logoSrc
+    };
+    const messageDetails = this.notificationService.serializeMessageDetails(inner);
+
+    this.isSavingUpdate.set(true);
+    this.clearUpdateFeedback();
+
+    this.notificationService
+      .createUserMessage({
+        messageDetails,
+        messageType: draft.messageType,
+        systemName: draft.systemName,
+        valid: draft.valid ? 1 : 0
+      })
+      .pipe(finalize(() => this.isSavingUpdate.set(false)))
+      .subscribe({
+        next: (successText) => {
+          this.updateSuccessMessage.set(successText);
+          this.updateStatus.set('success');
+          this.loadMessageList(); // Refresh list to show new message
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setTimeout(() => {
+            if (this.updateStatus() === 'success') {
+              this.clearUpdateFeedback();
+              this.setActiveTab('panel');
+            }
+          }, 3000);
         },
         error: () => {
           this.updateSuccessMessage.set(null);
