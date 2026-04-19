@@ -24,8 +24,8 @@ export class PushNotificationsComponent implements OnInit {
     const tab = params['tab'];
     const msgId = params['msgId'];
 
-    if (tab === msgId) {
-      // this.activeTab.set('update');
+    if (tab === 'update' && msgId) {
+      this.activeTab.set('update');
       this.selectedMessageId.set(+msgId);
     }
   }
@@ -113,7 +113,7 @@ export class PushNotificationsComponent implements OnInit {
     this.selectedMessageId.set(id);
     this.updateStatus.set(null);
     this.activeTab.set('update');
-    this.router.navigate([], { queryParams: { msgId: id }, queryParamsHandling: 'merge' });
+    this.router.navigate([], { queryParams: { tab:'update', msgId: id }, queryParamsHandling: 'merge' });
   }
 
   messageToDelete = signal<number | null>(null);
