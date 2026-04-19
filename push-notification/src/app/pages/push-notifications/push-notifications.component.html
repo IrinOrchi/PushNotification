@@ -174,7 +174,7 @@
                     <th scope="col" class="px-6 py-5 text-right font-bold pr-[4.5rem]">Actions</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-blue-50">
+                <tbody class="divide-y divide-slate-200">
                   @for (msg of messages(); track msg.messageID; let i = $index) {
                     <tr class="group transition-colors duration-200 hover:bg-blue-50/50" [class.bg-white]="i % 2 === 0" [class.bg-slate-50/50]="i % 2 !== 0">
                       <td class="whitespace-nowrap px-6 py-4 font-semibold text-blue-600/80 group-hover:text-blue-700 transition-colors">{{ i + 1 }}</td>
@@ -193,7 +193,7 @@
                       <td class="whitespace-nowrap px-6 py-4">
                         @if (msg.valid === 1) {
                           <span class="inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200 shadow-sm transition-all group-hover:bg-emerald-100">
-                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.4)] animate-pulse"></span>
+                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
                             Valid
                           </span>
                         } @else {

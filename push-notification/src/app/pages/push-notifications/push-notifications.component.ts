@@ -44,7 +44,15 @@ export class PushNotificationsComponent {
       messageType: "message",
       systemName: "assessment",
       valid: 1
-    }
+    },
+    {
+      messageID: 17,
+      messageDetails: '{"msgTitle":"bdjobs-amcat Certification Test ","msg":"যেকোনো স্থান থেকেই সার্টিফিকেশন টেস্ট দিন একদম বিনামূল্যে! ওয়েবক্যাম সহ ল্যাপটপ অথবা ডেস্কটপের মাধ্যমে ঘরে বসেই সার্টিফিকেশন টেস্টটি দিন এবং সহজেই নিজের দক্ষতা যাচাই করুন।","imgSrc":"https://bdjobs.com/NotificationMessageimages/bdjobs-amcat-Certification-Test-banner.png/","link":"https://mybdjobs.bdjobs.com/bn/mybdjobs/assessment/smnt_certification_helpbn.asp/","activityNode":"/","LogoSrc":"/"}',
+      messageType: "pm",
+      systemName: "Assessment",
+      valid: 0
+    },
+
   ]));
 
   private initializeData(data: ApiResponseMessage[]): ApiResponseMessage[] {
