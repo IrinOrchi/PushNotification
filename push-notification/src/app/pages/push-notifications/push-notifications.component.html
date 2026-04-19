@@ -58,10 +58,27 @@
                     </div>
                     <div>
                       <strong class="font-semibold block text-emerald-900">Success!</strong>
-                      <span class="text-sm opacity-90">Message updated successfully.</span>
+                      <span class="text-sm opacity-90">{{ updateSuccessMessage() ?? 'Message updated successfully.' }}</span>
                     </div>
                   </div>
-                  <button (click)="updateStatus.set(null)" class="text-emerald-600 hover:text-emerald-800 focus:outline-none">&times;</button>
+                  <button type="button" (click)="clearUpdateFeedback()" class="text-emerald-600 hover:text-emerald-800 focus:outline-none">&times;</button>
+                </div>
+              }
+
+              @if (updateStatus() === 'error') {
+                <div class="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800 shadow-sm flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+                  <div class="flex items-center gap-3">
+                    <div class="rounded-full bg-rose-200/50 p-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <strong class="font-semibold block text-rose-900">Update failed</strong>
+                      <span class="text-sm opacity-90">Could not save changes. Please try again.</span>
+                    </div>
+                  </div>
+                  <button type="button" (click)="clearUpdateFeedback()" class="text-rose-600 hover:text-rose-800 focus:outline-none">&times;</button>
                 </div>
               }
 
@@ -75,56 +92,58 @@
                 </div>
               </div>
 
-              <form (submit)="saveUpdate($event)" class="space-y-6">
+              @if (updateDraft(); as d) {
+              <form (ngSubmit)="saveUpdate()" class="space-y-6">
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div class="col-span-1 md:col-span-2">
                     <label for="msgTitle" class="mb-1.5 block text-sm font-semibold text-slate-700">Message Title <span class="text-rose-500">*</span></label>
-                    <input type="text" id="msgTitle" name="msgTitle" [value]="msg.parsedDetails?.msgTitle || ''" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                    <input type="text" id="msgTitle" name="msgTitle" [(ngModel)]="d.msgTitle" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                   </div>
-                  
+
                   <div class="col-span-1 md:col-span-2">
                     <label for="message" class="mb-1.5 block text-sm font-semibold text-slate-700">Message <span class="text-rose-500">*</span></label>
-                    <textarea id="message" name="message" rows="4" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">{{ msg.parsedDetails?.msg || '' }}</textarea>
+                    <textarea id="message" name="message" rows="4" [(ngModel)]="d.msg" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"></textarea>
                   </div>
 
                   <div class="col-span-1">
                     <label for="msgType" class="mb-1.5 block text-sm font-semibold text-slate-700">Message Type <span class="text-rose-500">*</span></label>
-                    <input type="text" id="msgType" name="msgType" [value]="msg.messageType || ''" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                    <input type="text" id="msgType" name="msgType" [(ngModel)]="d.messageType" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                   </div>
 
                   <div class="col-span-1">
                     <label for="sysName" class="mb-1.5 block text-sm font-semibold text-slate-700">System Name <span class="text-rose-500">*</span></label>
-                    <input type="text" id="sysName" name="sysName" [value]="msg.systemName || ''" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                    <input type="text" id="sysName" name="sysName" [(ngModel)]="d.systemName" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                   </div>
 
                   <div class="col-span-1">
                     <label for="imgSrc" class="mb-1.5 block text-sm font-semibold text-slate-700">Image Source</label>
-                    <input type="url" id="imgSrc" name="imgSrc" [value]="msg.parsedDetails?.imgSrc || ''" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder="https://...">
+                    <input type="url" id="imgSrc" name="imgSrc" [(ngModel)]="d.imgSrc" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder="https://...">
                   </div>
 
                   <div class="col-span-1">
                     <label for="link" class="mb-1.5 block text-sm font-semibold text-slate-700">Forward Link <span class="text-rose-500">*</span></label>
-                    <input type="url" id="link" name="link" [value]="msg.parsedDetails?.link || ''" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder="https://...">
+                    <input type="url" id="link" name="link" [(ngModel)]="d.link" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder="https://...">
                   </div>
 
                   <div class="col-span-1">
                     <label for="LogoSrc" class="mb-1.5 block text-sm font-semibold text-slate-700">Logo Source</label>
-                    <input type="text" id="LogoSrc" name="LogoSrc" [value]="msg.parsedDetails?.LogoSrc || ''" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                    <input type="text" id="LogoSrc" name="LogoSrc" [(ngModel)]="d.logoSrc" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                   </div>
 
-                  <div class="col-span-1">
-                    <label for="AppScreen" class="mb-1.5 block text-sm font-semibold text-slate-700">App Screen Name</label>
-                    <input type="text" id="AppScreen" name="AppScreen" [value]="msg.parsedDetails?.activityNode || ''" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
-                  </div>
-
-                  <div class="col-span-1">
-                    <label for="messageNo" class="mb-1.5 block text-sm font-semibold text-slate-700">Message No <span class="text-rose-500">*</span></label>
-                    <input type="number" id="messageNo" name="messageNo" [value]="msg.messageNo" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                  <div class="col-span-1 md:col-span-2 grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div>
+                      <label for="messageNo" class="mb-1.5 block text-sm font-semibold text-slate-700">Message No <span class="text-rose-500">*</span></label>
+                      <input type="number" id="messageNo" name="messageNo" [(ngModel)]="d.messageNo" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                    </div>
+                    <div>
+                      <label for="activityNode" class="mb-1.5 block text-sm font-semibold text-slate-700">Activity Node</label>
+                      <input type="text" id="activityNode" name="activityNode" [(ngModel)]="d.activityNode" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                    </div>
                   </div>
 
                   <div class="col-span-1 md:col-span-2 pt-4">
                     <label class="relative inline-flex cursor-pointer items-center gap-3 select-none">
-                      <input type="checkbox" name="validCheckBox" id="validCheckBox" [checked]="msg.valid === 1" class="peer sr-only">
+                      <input type="checkbox" name="validActive" id="validCheckBox" [(ngModel)]="d.valid" class="peer sr-only">
                       <div class="relative h-6 w-11 rounded-full bg-slate-300 peer-checked:bg-emerald-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-all after:content-[''] peer-checked:after:translate-x-full transition-colors duration-200"></div>
                       <span class="text-sm font-semibold text-slate-700">Check Validity (Active)</span>
                     </label>
@@ -132,14 +151,19 @@
                 </div>
 
                 <div class="mt-8 flex items-center justify-end gap-3 border-t border-slate-200 pt-6">
-                  <button type="button" (click)="setActiveTab('panel')" class="rounded-xl px-6 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-200">
+                  <button type="button" (click)="setActiveTab('panel')" [disabled]="isSavingUpdate()" class="rounded-xl px-6 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-200 disabled:opacity-50 disabled:pointer-events-none">
                     Cancel
                   </button>
-                  <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-8 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    Submit Update
+                  <button type="submit" [disabled]="isSavingUpdate()" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-8 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">
+                    @if (isSavingUpdate()) {
+                      <span>Saving…</span>
+                    } @else {
+                      <span>Submit Update</span>
+                    }
                   </button>
                 </div>
               </form>
+              }
             } @else {
               <div class="flex flex-col items-center justify-center py-16 text-center text-slate-500 bg-white rounded-xl border border-dashed border-slate-300">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-slate-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

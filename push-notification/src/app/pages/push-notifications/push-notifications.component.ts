@@ -1,13 +1,28 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { PushNotificationService } from '../../services/push-notification.service';
-import { ApiResponseMessage } from '../../models/message.model';
+import { ApiResponseMessage, ParsedMessageDetails } from '../../models/message.model';
+
+/** Editable fields for the update panel (bound with ngModel). */
+export interface UpdatePanelDraft {
+  msgTitle: string;
+  msg: string;
+  messageType: string;
+  systemName: string;
+  imgSrc: string;
+  link: string;
+  logoSrc: string;
+  activityNode: string;
+  messageNo: number;
+  valid: boolean;
+}
 
 @Component({
   selector: 'app-push-notifications',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './push-notifications.component.html',
   styleUrl: './push-notifications.component.scss'
 })
@@ -63,8 +78,34 @@ export class PushNotificationsComponent implements OnInit {
   });
 
   updateStatus = signal<'success' | 'error' | null>(null);
+  updateSuccessMessage = signal<string | null>(null);
+  isSavingUpdate = signal(false);
+
+  updateDraft = signal<UpdatePanelDraft | null>(null);
 
   messages = signal<ApiResponseMessage[]>([]);
+
+  constructor() {
+    effect(() => {
+      const msg = this.selectedMessage();
+      if (!msg) {
+        this.updateDraft.set(null);
+        return;
+      }
+      this.updateDraft.set({
+        msgTitle: msg.parsedDetails?.msgTitle ?? '',
+        msg: msg.parsedDetails?.msg ?? '',
+        messageType: msg.messageType ?? '',
+        systemName: msg.systemName ?? '',
+        imgSrc: msg.parsedDetails?.imgSrc ?? '',
+        link: msg.parsedDetails?.link ?? '',
+        logoSrc: msg.parsedDetails?.LogoSrc ?? '',
+        activityNode: msg.parsedDetails?.activityNode ?? '',
+        messageNo: msg.messageNo,
+        valid: msg.valid === 1
+      });
+    });
+  }
 
   filteredMessages = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
@@ -77,11 +118,16 @@ export class PushNotificationsComponent implements OnInit {
     });
   });
 
+  protected clearUpdateFeedback(): void {
+    this.updateStatus.set(null);
+    this.updateSuccessMessage.set(null);
+  }
+
   protected setActiveTab(tab: 'update' | 'panel'): void {
     this.activeTab.set(tab);
     if (tab === 'panel') {
-      this.selectedMessageId.set(null); 
-      this.updateStatus.set(null);
+      this.selectedMessageId.set(null);
+      this.clearUpdateFeedback();
       this.router.navigate([], { queryParams: {} });
     }
   }
@@ -92,7 +138,7 @@ export class PushNotificationsComponent implements OnInit {
 
   protected editMessage(id: number): void {
     this.selectedMessageId.set(id);
-    this.updateStatus.set(null);
+    this.clearUpdateFeedback();
     this.activeTab.set('update');
     this.router.navigate([], { queryParams: { tab:'update', msgId: id }, queryParamsHandling: 'merge' });
   }
@@ -115,14 +161,68 @@ export class PushNotificationsComponent implements OnInit {
     }
   }
 
-  protected saveUpdate(event: Event): void {
-    event.preventDefault();
-    this.updateStatus.set('success');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setTimeout(() => {
-      if (this.updateStatus() === 'success') {
-        this.updateStatus.set(null);
-      }
-    }, 4000);
+  protected saveUpdate(): void {
+    const draft = this.updateDraft();
+    const msg = this.selectedMessage();
+    if (!draft || !msg || this.isSavingUpdate()) {
+      return;
+    }
+
+    const messageNo = Number(draft.messageNo);
+
+    const inner: ParsedMessageDetails = {
+      msgTitle: draft.msgTitle.trim(),
+      msg: draft.msg,
+      imgSrc: draft.imgSrc,
+      link: draft.link,
+      activityNode: draft.activityNode,
+      LogoSrc: draft.logoSrc
+    };
+    const messageDetails = this.notificationService.serializeMessageDetails(inner);
+
+    this.isSavingUpdate.set(true);
+    this.clearUpdateFeedback();
+
+    this.notificationService
+      .updateUserMessage({
+        messageID: msg.messageID,
+        messageDetails,
+        messageType: draft.messageType,
+        systemName: draft.systemName,
+        valid: draft.valid ? 1 : 0
+      })
+      .pipe(finalize(() => this.isSavingUpdate.set(false)))
+      .subscribe({
+        next: (successText) => {
+          this.updateSuccessMessage.set(successText);
+          this.messages.update((items) =>
+            items.map((m) =>
+              m.messageID === msg.messageID
+                ? {
+                    ...m,
+                    messageNo: Number.isFinite(messageNo) ? messageNo : m.messageNo,
+                    messageType: draft.messageType,
+                    systemName: draft.systemName,
+                    valid: draft.valid ? 1 : 0,
+                    messageDetails,
+                    parsedDetails: { ...inner }
+                  }
+                : m
+            )
+          );
+          this.updateStatus.set('success');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setTimeout(() => {
+            if (this.updateStatus() === 'success') {
+              this.clearUpdateFeedback();
+            }
+          }, 4000);
+        },
+        error: () => {
+          this.updateSuccessMessage.set(null);
+          this.updateStatus.set('error');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
   }
 }
