@@ -41,7 +41,6 @@
     <!-- Content Area -->
     <section class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-200/50 sm:p-8">
       
-      <!-- Global Status Feedback (Visible across all tabs) -->
       @if (updateStatus() === 'success') {
         <div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 shadow-sm flex items-center justify-between animate-in fade-in slide-in-from-top-2">
           <div class="flex items-center gap-3">
@@ -435,7 +434,7 @@
       </div>
     </div>
   }
-  <!-- Sending Bulk Modal/Overlay -->
+  <!-- Sending Bulk Modal -->
   @if (isSendingBulk()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md transition-all duration-300">
       <div class="relative w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-300">

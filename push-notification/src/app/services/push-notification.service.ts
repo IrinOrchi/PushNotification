@@ -1,15 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import {
-  ApiResponseMessage,
-  CreateUserMessageRequest,
-  ParsedMessageDetails,
-  SendNotificationRequest,
-  SendNotificationResult,
-  UpdateUserMessageEvent,
-  UpdateUserMessageRequest
-} from '../models/message.model';
+import {ApiResponseMessage, CreateUserMessageRequest, ParsedMessageDetails, SendNotificationRequest, SendNotificationResult, UpdateUserMessageEvent,
+  UpdateUserMessageRequest} from '../models/message.model';
 
 const USER_MESSAGE_LIST_URL =
   'https://api.bdjobs.com/bdjobs-promotional-push/api/PromotionalPushNotification/GetUserMessageList';
@@ -128,7 +121,6 @@ export class PushNotificationService {
       return fallback;
     }
 
-    // Check for success (1000: Create, 1001: Update, 1002: Delete)
     const successEvent = events.find((e) => (Number(e.eventId) === 1000 || Number(e.eventId) === 1001 || Number(e.eventId) === 1002) && Number(e.eventType) === 1);
     if (successEvent) {
       const msg = this.pickMessage(successEvent);

@@ -6,7 +6,6 @@ import { finalize } from 'rxjs';
 import { PushNotificationService } from '../../services/push-notification.service';
 import { ApiResponseMessage, ParsedMessageDetails } from '../../models/message.model';
 
-/** Editable fields for the update panel (bound with ngModel). */
 export interface UpdatePanelDraft {
   msgTitle: string;
   msg: string;
@@ -338,7 +337,7 @@ export class PushNotificationsComponent implements OnInit {
     this.notificationService
       .sendNotificationBatch({
         messageID,
-        pageNo: 1, // Fixed to page 1 per requirement
+        pageNo: 1,
         batchSize: 250
       })
       .subscribe({
@@ -353,7 +352,6 @@ export class PushNotificationsComponent implements OnInit {
             this.updateSuccessMessage.set(`Notification sent successfully. Total sent: ${newSum}`);
             window.scrollTo({ top: 0, behavior: 'smooth' });
           } else {
-            // Recurse with current sum
             this.processBatch(messageID, newSum);
           }
         },
