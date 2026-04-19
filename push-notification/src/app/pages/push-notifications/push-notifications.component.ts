@@ -138,6 +138,7 @@ export class PushNotificationsComponent implements OnInit {
       this.selectedMessageId.set(null);
       this.clearUpdateFeedback();
       this.router.navigate([], { queryParams: {} });
+      this.loadMessageList();
     } else if (tab === 'create') {
       this.selectedMessageId.set(null);
       this.clearUpdateFeedback();
@@ -243,8 +244,9 @@ export class PushNotificationsComponent implements OnInit {
             }
           }, 4000);
         },
-        error: () => {
-          this.updateSuccessMessage.set(null);
+        error: (err: any) => {
+          const errMsg = this.notificationService.extractErrorMessage(err);
+          this.updateSuccessMessage.set(errMsg);
           this.updateStatus.set('error');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -289,8 +291,9 @@ export class PushNotificationsComponent implements OnInit {
             }
           }, 3000);
         },
-        error: () => {
-          this.updateSuccessMessage.set(null);
+        error: (err: any) => {
+          const errMsg = this.notificationService.extractErrorMessage(err);
+          this.updateSuccessMessage.set(errMsg);
           this.updateStatus.set('error');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }

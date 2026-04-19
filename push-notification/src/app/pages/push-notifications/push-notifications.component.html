@@ -83,7 +83,7 @@
                     </div>
                     <div>
                       <strong class="font-semibold block text-rose-900">Update failed</strong>
-                      <span class="text-sm opacity-90">Could not save changes. Please try again.</span>
+                      <span class="text-sm opacity-90">{{ updateSuccessMessage() ?? 'Could not save changes. Please try again.' }}</span>
                     </div>
                   </div>
                   <button type="button" (click)="clearUpdateFeedback()" class="text-rose-600 hover:text-rose-800 focus:outline-none">&times;</button>
@@ -226,7 +226,7 @@
                   </div>
                   <div>
                     <strong class="font-semibold block text-rose-900">Creation failed</strong>
-                    <span class="text-sm opacity-90">Could not create message. Please try again.</span>
+                    <span class="text-sm opacity-90">{{ updateSuccessMessage() ?? 'Could not create message. Please try again.' }}</span>
                   </div>
                 </div>
                 <button type="button" (click)="clearUpdateFeedback()" class="text-rose-600 hover:text-rose-800 focus:outline-none">&times;</button>

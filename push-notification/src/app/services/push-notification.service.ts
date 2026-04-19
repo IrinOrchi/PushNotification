@@ -72,34 +72,81 @@ export class PushNotificationService {
       .pipe(map((response) => this.extractUpdateSuccessMessage(response)));
   }
 
-  /** Parses `[{ eventId: 1001, eventData: [{ key: 'message', value: '...' }] }]`-style success bodies. */
+  /** Parses success/failure bodies based on eventId and eventType. */
   extractUpdateSuccessMessage(response: unknown): string {
-    const fallback = 'Message updated successfully.';
-    if (!Array.isArray(response) || response.length === 0) {
+    const fallback = 'Operation completed successfully.';
+    const events = this.unwrapToEvents(response);
+
+    if (events.length === 0) {
       return fallback;
     }
-    const events = response as UpdateUserMessageEvent[];
-    const pickMessage = (ev: UpdateUserMessageEvent): string | null => {
-      if (!Array.isArray(ev?.eventData)) {
-        return null;
-      }
-      const row = ev.eventData.find((d) => d?.key === 'message' && typeof d?.value === 'string');
-      return row?.value?.trim() ? row.value : null;
-    };
-    const primary = events.find((e) => e?.eventId === 1001 && e?.eventType === 1);
-    if (primary) {
-      const msg = pickMessage(primary);
-      if (msg) {
-        return msg;
-      }
+
+    const successEvent = events.find((e) => (Number(e.eventId) === 1000 || Number(e.eventId) === 1001) && Number(e.eventType) === 1);
+    if (successEvent) {
+      const msg = this.pickMessage(successEvent);
+      if (msg) return msg;
     }
+
+    const failureEvent = events.find((e) => Number(e.eventType) === 2);
+    if (failureEvent) {
+      const msg = this.pickMessage(failureEvent);
+      throw new Error(msg || 'Failed to complete the operation.');
+    }
+
     for (const ev of events) {
-      const msg = pickMessage(ev);
-      if (msg) {
-        return msg;
+      const msg = this.pickMessage(ev);
+      if (msg) return msg;
+    }
+
+    return fallback;
+  }
+
+  /** Unified error extraction for both logical errors (200 OK) and HTTP errors (4xx/5xx). */
+  extractErrorMessage(err: any): string {
+    const defaultFail = 'An error occurred. Please try again.';
+    if (!err) return defaultFail;
+
+    // If it's an Error thrown by our service (logical failure)
+    if (err instanceof Error && err.message) {
+      return err.message;
+    }
+
+    // If it's an HttpErrorResponse
+    const body = err.error;
+    if (body) {
+      try {
+        // Try parsing the error body using the same logic
+        return this.extractUpdateSuccessMessage(body);
+      } catch (logicalErr: any) {
+        if (logicalErr instanceof Error) return logicalErr.message;
       }
     }
-    return fallback;
+
+    return err.message || defaultFail;
+  }
+
+  private unwrapToEvents(body: unknown): UpdateUserMessageEvent[] {
+    if (Array.isArray(body)) {
+      return body as UpdateUserMessageEvent[];
+    }
+    if (body && typeof body === 'object') {
+      const record = body as Record<string, unknown>;
+      for (const key of ['data', 'result', 'items', 'messageList', 'events']) {
+        const v = record[key];
+        if (Array.isArray(v)) {
+          return v as UpdateUserMessageEvent[];
+        }
+      }
+    }
+    return [];
+  }
+
+  private pickMessage(ev: UpdateUserMessageEvent): string | null {
+    if (!Array.isArray(ev?.eventData)) {
+      return null;
+    }
+    const row = ev.eventData.find((d) => d?.key === 'message' && typeof d?.value === 'string');
+    return row?.value?.trim() ? row.value : null;
   }
 
   private parseResponse(body: unknown): ApiResponseMessage[] {
