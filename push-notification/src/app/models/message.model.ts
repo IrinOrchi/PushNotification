@@ -18,6 +18,7 @@ export interface ApiResponseMessage {
 }
 
 export interface CreateUserMessageRequest {
+  messageNo: number;
   messageDetails: string;
   messageType: string;
   systemName: string;
@@ -37,6 +38,7 @@ export interface SendNotificationResult {
 
 export interface UpdateUserMessageRequest {
   messageID: number;
+  messageNo: number;
   messageDetails: string;
   messageType: string;
   systemName: string;

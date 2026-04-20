@@ -7,6 +7,7 @@ import { PushNotificationService } from '../../services/push-notification.servic
 import { ApiResponseMessage, ParsedMessageDetails } from '../../models/message.model';
 
 export interface UpdatePanelDraft {
+  messageNo: number;
   msgTitle: string;
   msg: string;
   messageType: string;
@@ -84,6 +85,7 @@ export class PushNotificationsComponent implements OnInit {
 
   updateDraft = signal<UpdatePanelDraft | null>(null);
   createDraft = signal<UpdatePanelDraft>({
+    messageNo: 0,
     msgTitle: '',
     msg: '',
     messageType: '',
@@ -105,6 +107,7 @@ export class PushNotificationsComponent implements OnInit {
         return;
       }
       this.updateDraft.set({
+        messageNo: msg.messageNo ?? 0,
         msgTitle: msg.parsedDetails?.msgTitle ?? '',
         msg: msg.parsedDetails?.msg ?? '',
         messageType: msg.messageType ?? '',
@@ -151,6 +154,7 @@ export class PushNotificationsComponent implements OnInit {
 
   private resetCreateDraft(): void {
     this.createDraft.set({
+      messageNo: 0,
       msgTitle: '',
       msg: '',
       messageType: '',
@@ -238,6 +242,7 @@ export class PushNotificationsComponent implements OnInit {
     this.notificationService
       .updateUserMessage({
         messageID: msg.messageID,
+        messageNo: Number(draft.messageNo),
         messageDetails,
         messageType: draft.messageType,
         systemName: draft.systemName,
@@ -297,6 +302,7 @@ export class PushNotificationsComponent implements OnInit {
 
     this.notificationService
       .createUserMessage({
+        messageNo: Number(draft.messageNo),
         messageDetails,
         messageType: draft.messageType,
         systemName: draft.systemName,
