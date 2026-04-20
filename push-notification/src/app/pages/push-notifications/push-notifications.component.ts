@@ -338,7 +338,7 @@ export class PushNotificationsComponent implements OnInit {
       .sendNotificationBatch({
         messageID,
         pageNo: 1,
-        batchSize: 250
+        batchSize: 1
       })
       .subscribe({
         next: (res) => {
@@ -346,7 +346,7 @@ export class PushNotificationsComponent implements OnInit {
           const newSum = currentSum + batchSent;
           this.bulkSentCumulative.set(newSum);
 
-          if (batchSent < 250) {
+          if (batchSent < 1) {
             this.isSendingBulk.set(false);
             this.updateStatus.set('success');
             this.updateSuccessMessage.set(`Notification sent successfully. Total sent: ${newSum}`);

@@ -114,7 +114,7 @@ export class PushNotificationService {
   }
 
   extractUpdateSuccessMessage(response: unknown): string {
-    const fallback = 'Operation completed successfully.';
+    const fallback = 'Failed to send notification. Please try again.';
     const events = this.unwrapToEvents(response);
 
     if (events.length === 0) {
