@@ -339,26 +339,29 @@ export class PushNotificationsComponent implements OnInit {
     this.processBatch(messageID, 0);
   }
 
-  private processBatch(messageID: number, currentSum: number): void {
+  private processBatch(messageID: number, cumulativeAlreadySent: number): void {
+    const BATCH_SIZE = 250;
     this.notificationService
       .sendNotificationBatch({
         messageID,
         pageNo: 1,
-        batchSize: 1
+        batchSize: BATCH_SIZE
       })
       .subscribe({
         next: (res) => {
-          const batchSent = res.totalSent;
-          const newSum = currentSum + batchSent;
-          this.bulkSentCumulative.set(newSum);
+          const grandTotal = res.totalSent; 
+          const nextCumulative = cumulativeAlreadySent + BATCH_SIZE;
+          
+          const displayTotal = nextCumulative > grandTotal ? grandTotal : nextCumulative;
+          this.bulkSentCumulative.set(displayTotal);
 
-          if (batchSent < 1) {
+          if (nextCumulative >= grandTotal) {
             this.isSendingBulk.set(false);
             this.updateStatus.set('success');
-            this.updateSuccessMessage.set(`Notification sent successfully. Total sent: ${newSum}`);
+            this.updateSuccessMessage.set(`Notification process completed. Total processed: ${grandTotal}`);
             window.scrollTo({ top: 0, behavior: 'smooth' });
           } else {
-            this.processBatch(messageID, newSum);
+            this.processBatch(messageID, nextCumulative);
           }
         },
         error: (err) => {
