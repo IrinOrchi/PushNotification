@@ -90,6 +90,12 @@ export class PushNotificationsComponent implements OnInit {
       const id = +msgId;
       this.actionTriggered = true;
       this.startBulkSend(id);
+      
+      this.router.navigate([], {
+        queryParams: { action: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true
+      });
     }
   }
 
@@ -102,7 +108,7 @@ export class PushNotificationsComponent implements OnInit {
   }
 
   private openUrlInNewTab(queryParams: any): void {
-    const urlTree = this.router.createUrlTree([], { queryParams, queryParamsHandling: 'merge' });
+    const urlTree = this.router.createUrlTree([], { queryParams });
     const serializedUrl = this.router.serializeUrl(urlTree);
     const externalUrl = this.location.prepareExternalUrl(serializedUrl);
     window.open(externalUrl, '_blank');
