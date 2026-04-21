@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -29,12 +29,14 @@ export class PushNotificationsComponent implements OnInit {
   protected readonly notificationService = inject(PushNotificationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location);
 
   activeTab = signal<'update' | 'panel' | 'create'>('panel');
   searchQuery = signal<string>('');
   selectedMessageId = signal<number | null>(null);
   isLoadingList = signal(false);
   listLoadError = signal<string | null>(null);
+  private actionTriggered = false;
 
   ngOnInit(): void {
     this.syncStateWithUrl();
@@ -54,6 +56,7 @@ export class PushNotificationsComponent implements OnInit {
         },
         error: () => {
           this.listLoadError.set('Could not load messages. Check your connection or try again later.');
+          this.syncStateWithUrl();
         }
       });
   }
@@ -63,6 +66,7 @@ export class PushNotificationsComponent implements OnInit {
     const tab = params['tab'];
     const msgId = params['msgId'];
     const search = params['search'];
+    const action = params['action'];
 
     if (search) {
       this.searchQuery.set(search);
@@ -81,6 +85,27 @@ export class PushNotificationsComponent implements OnInit {
     } else {
       this.activeTab.set('panel');
     }
+
+    if (action === 'send' && msgId && !this.actionTriggered) {
+      const id = +msgId;
+      this.actionTriggered = true;
+      this.startBulkSend(id);
+    }
+  }
+
+  protected openEditInNewTab(id: number): void {
+    this.openUrlInNewTab({ tab: 'update', msgId: id });
+  }
+
+  protected openSendInNewTab(id: number): void {
+    this.openUrlInNewTab({ tab: 'panel', msgId: id, action: 'send' });
+  }
+
+  private openUrlInNewTab(queryParams: any): void {
+    const urlTree = this.router.createUrlTree([], { queryParams, queryParamsHandling: 'merge' });
+    const serializedUrl = this.router.serializeUrl(urlTree);
+    const externalUrl = this.location.prepareExternalUrl(serializedUrl);
+    window.open(externalUrl, '_blank');
   }
 
   selectedMessage = computed(() => {
