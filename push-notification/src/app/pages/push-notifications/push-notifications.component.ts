@@ -37,6 +37,7 @@ export class PushNotificationsComponent implements OnInit {
   listLoadError = signal<string | null>(null);
 
   ngOnInit(): void {
+    this.syncStateWithUrl();
     this.loadMessageList();
   }
 
@@ -49,7 +50,7 @@ export class PushNotificationsComponent implements OnInit {
       .subscribe({
         next: (messages) => {
           this.messages.set(messages);
-          this.applyDeepLinkFromRoute(messages);
+          this.syncStateWithUrl(messages);
         },
         error: () => {
           this.listLoadError.set('Could not load messages. Check your connection or try again later.');
@@ -57,16 +58,28 @@ export class PushNotificationsComponent implements OnInit {
       });
   }
 
-  private applyDeepLinkFromRoute(messages: ApiResponseMessage[]): void {
+  private syncStateWithUrl(messages?: ApiResponseMessage[]): void {
     const params = this.route.snapshot.queryParams;
     const tab = params['tab'];
     const msgId = params['msgId'];
+    const search = params['search'];
+
+    if (search) {
+      this.searchQuery.set(search);
+    }
+
     if (tab === 'update' && msgId) {
       const id = +msgId;
-      if (messages.some((m) => m.messageID === id)) {
+      if (!messages || messages.some((m) => m.messageID === id)) {
         this.activeTab.set('update');
         this.selectedMessageId.set(id);
+      } else {
+        this.activeTab.set('panel');
       }
+    } else if (tab === 'create') {
+      this.activeTab.set('create');
+    } else {
+      this.activeTab.set('panel');
     }
   }
 
@@ -123,13 +136,17 @@ export class PushNotificationsComponent implements OnInit {
 
   filteredMessages = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
-    if (!query) return this.messages();
-    
-    return this.messages().filter(m => {
-      const idMatch = m.messageID.toString().includes(query);
-      const titleMatch = m.parsedDetails?.msgTitle?.toLowerCase().includes(query) || false;
-      return idMatch || titleMatch;
-    });
+    let list = this.messages();
+
+    if (query) {
+      list = list.filter(m => {
+        const idMatch = m.messageID.toString().includes(query);
+        const titleMatch = m.parsedDetails?.msgTitle?.toLowerCase().includes(query) || false;
+        return idMatch || titleMatch;
+      });
+    }
+
+    return [...list].sort((a, b) => b.messageID - a.messageID);
   });
 
   protected clearUpdateFeedback(): void {
@@ -137,12 +154,21 @@ export class PushNotificationsComponent implements OnInit {
     this.updateSuccessMessage.set(null);
   }
 
-  protected setActiveTab(tab: 'update' | 'panel' | 'create'): void {
+  protected setActiveTab(tab: 'update' | 'panel' | 'create', search?: string): void {
     this.activeTab.set(tab);
     if (tab === 'panel') {
       this.selectedMessageId.set(null);
       this.clearUpdateFeedback();
-      this.router.navigate([], { queryParams: {} });
+      const queryParams: any = {};
+      if (search) {
+        this.searchQuery.set(search);
+        queryParams.search = search;
+      } else {
+        if (this.searchQuery()) {
+          queryParams.search = this.searchQuery();
+        }
+      }
+      this.router.navigate([], { queryParams });
       this.loadMessageList();
     } else if (tab === 'create') {
       this.selectedMessageId.set(null);
@@ -168,7 +194,23 @@ export class PushNotificationsComponent implements OnInit {
   }
 
   updateSearch(event: Event): void {
-    this.searchQuery.set((event.target as HTMLInputElement).value);
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(value);
+    
+    this.router.navigate([], {
+      queryParams: { search: value || null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+  }
+
+  protected clearSearch(): void {
+    this.searchQuery.set('');
+    this.router.navigate([], {
+      queryParams: { search: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
   }
 
   protected editMessage(id: number): void {
@@ -202,6 +244,10 @@ export class PushNotificationsComponent implements OnInit {
           }
           this.messageToDelete.set(null);
           window.scrollTo({ top: 0, behavior: 'smooth' });
+
+          if (this.searchQuery() && this.filteredMessages().length === 0) {
+            this.clearSearch();
+          }
           // setTimeout(() => {
           //   if (this.updateStatus() === 'success') {
           //     this.clearUpdateFeedback();
@@ -315,12 +361,14 @@ export class PushNotificationsComponent implements OnInit {
           this.updateStatus.set('success');
           this.loadMessageList(); 
           window.scrollTo({ top: 0, behavior: 'smooth' });
+          
+          const createdTitle = draft.msgTitle.trim();
           setTimeout(() => {
             if (this.updateStatus() === 'success') {
               this.clearUpdateFeedback();
-              this.setActiveTab('panel');
+              this.setActiveTab('panel', createdTitle);
             }
-          }, 3000);
+          }, 1000);
         },
         error: (err: any) => {
           const errMsg = this.notificationService.extractErrorMessage(err);

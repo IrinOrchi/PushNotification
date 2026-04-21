@@ -145,7 +145,7 @@
                   </div>
 
                   <div class="col-span-1">
-                    <label for="activityNode" class="mb-1.5 block text-sm font-semibold text-slate-700">Activity Node</label>
+                    <label for="activityNode" class="mb-1.5 block text-sm font-semibold text-slate-700">App Screen Name</label>
                     <input type="text" id="activityNode" name="activityNode" [(ngModel)]="d.activityNode" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                   </div>
 
@@ -248,7 +248,7 @@
                 </div>
 
                 <div class="col-span-1">
-                  <label for="newActivityNode" class="mb-1.5 block text-sm font-semibold text-slate-700">Activity Node</label>
+                  <label for="newActivityNode" class="mb-1.5 block text-sm font-semibold text-slate-700">App Screen Name</label>
                   <input type="text" id="newActivityNode" name="activityNode" [(ngModel)]="createDraft().activityNode" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 shadow-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                 </div>
 
@@ -310,7 +310,7 @@
                 class="block w-full rounded-xl border border-slate-300 bg-slate-50 py-2.5 pl-10 pr-10 text-sm text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               >
               @if (searchQuery()) {
-                <button type="button" (click)="searchQuery.set('')" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 focus:outline-none">
+                <button type="button" (click)="clearSearch()" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 focus:outline-none">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                   </svg>
