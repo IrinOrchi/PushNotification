@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import {ApiResponseMessage, CreateUserMessageRequest, ParsedMessageDetails, SendNotificationRequest, SendNotificationResult, UpdateUserMessageEvent,
+import {ApiResponseMessage, CreateUserMessageRequest, NotificationCountsResponse, ParsedMessageDetails, SendNotificationRequest, SendNotificationResult, UpdateUserMessageEvent,
   UpdateUserMessageRequest} from '../models/message.model';
 
 const USER_MESSAGE_LIST_URL =
@@ -18,6 +18,9 @@ const DELETE_USER_MESSAGE_URL =
 
 const SEND_NOTIFICATION_URL =
   'https://api.bdjobs.com/bdjobs-promotional-push/api/PromotionalPushNotification/SendNotification';
+
+const NOTIFICATION_COUNTS_URL =
+  'https://api.bdjobs.com/PushNotification/api/PushNotification/counts';
 
 @Injectable({
   providedIn: 'root'
@@ -91,6 +94,11 @@ export class PushNotificationService {
     return this.http
       .post<unknown>(SEND_NOTIFICATION_URL, args, { headers })
       .pipe(map((response) => this.extractSendNotificationResult(response)));
+  }
+
+  getNotificationCounts(messageId: number): Observable<NotificationCountsResponse> {
+    console.log('Sending count API for messageId:', messageId);
+    return this.http.get<NotificationCountsResponse>(`${NOTIFICATION_COUNTS_URL}?messageId=${messageId}`);
   }
 
   private extractSendNotificationResult(response: unknown): SendNotificationResult {

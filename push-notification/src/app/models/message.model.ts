@@ -55,3 +55,18 @@ export interface UpdateUserMessageEvent {
   eventData: UpdateUserMessageEventData[];
   eventId: number;
 }
+
+export interface NotificationCounts {
+  messageID: number;
+  messageNo: number;
+  uniqueUser: number;
+  totalUser: number;
+}
+
+export interface NotificationCountsResponse {
+  code: number;
+  message: string;
+  data: NotificationCounts;
+  error: any;
+  request: any;
+}

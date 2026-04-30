@@ -435,10 +435,26 @@ export class PushNotificationsComponent implements OnInit {
           this.bulkSentCumulative.set(displayTotal);
 
           if (nextCumulative >= grandTotal) {
-            this.isSendingBulk.set(false);
-            this.updateStatus.set('success');
-            this.updateSuccessMessage.set(`Notification process completed. Total processed: ${grandTotal}`);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            this.notificationService.getNotificationCounts(messageID).subscribe({
+              next: (countRes) => {
+                this.isSendingBulk.set(false);
+                this.updateStatus.set('success');
+
+                const uniqueUser = countRes.data?.uniqueUser ?? 0;
+                const msgId = countRes.data?.messageID ?? messageID;
+
+                this.updateSuccessMessage.set(
+                  `Notification process completed. Total processed: ${grandTotal}. No PID Found. Notification Sent Total Unique User = ${uniqueUser}. MessageId ${messageID}`
+                );
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              },
+              error: () => {
+                this.isSendingBulk.set(false);
+                this.updateStatus.set('success');
+                this.updateSuccessMessage.set(`Notification process completed. Total processed: ${grandTotal}. (Note: Could not fetch final counts)`);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            });
           } else {
             this.processBatch(messageID, nextCumulative);
           }
