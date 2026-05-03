@@ -444,7 +444,7 @@ export class PushNotificationsComponent implements OnInit {
                 const msgId = countRes.data?.messageID ?? messageID;
 
                 this.updateSuccessMessage.set(
-                  `Notification process completed. Total processed: ${grandTotal}. No PID Found. Notification Sent Total Unique User = ${uniqueUser}. MessageId ${messageID}`
+                  `Notification process completed. Total processed: ${grandTotal}. No PID Found. Notification Sent Total Unique User = ${uniqueUser}. MessageID : ${messageID}`
                 );
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               },
