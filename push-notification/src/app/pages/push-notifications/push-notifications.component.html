@@ -9,34 +9,103 @@
         <p class="mt-2 text-sm font-medium text-slate-500">Efficiently manage your push notifications and message panels.</p>
       </div>
 
-      <!-- Nav Tabs -->
-      <nav class="flex w-full space-x-2 rounded-xl bg-slate-200/50 p-1.5 ring-1 ring-slate-200/60 backdrop-blur-md md:w-auto">
-        <button
-          (click)="setActiveTab('update')"
+      <!-- Nav Tabs & Global Actions -->
+      <div class="flex flex-col gap-4 md:flex-row md:items-center">
+        <nav class="flex w-full space-x-2 rounded-xl bg-slate-200/50 p-1.5 ring-1 ring-slate-200/60 backdrop-blur-md md:w-auto">
+          <button
+            (click)="setActiveTab('update')"
+            type="button"
+            [class]="activeTab() === 'update' ? 'bg-white text-cyan-700 shadow-sm ring-1 ring-slate-200/50 scale-[1.02]' : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
+            class="flex-1 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-cyan-500/30 md:flex-none"
+          >
+          Message Update Panel
+          </button>
+          <button
+            (click)="setActiveTab('create')"
+            type="button"
+            [class]="activeTab() === 'create' ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-slate-200/50 scale-[1.02]' : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
+            class="flex-1 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30 md:flex-none"
+          >
+            Create New
+          </button>
+          <button
+            (click)="setActiveTab('panel')"
+            type="button"
+            [class]="activeTab() === 'panel' ? 'bg-white text-indigo-700 shadow-sm ring-1 ring-slate-200/50 scale-[1.02]' : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
+            class="flex-1 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-indigo-500/30 md:flex-none"
+          >
+            Message Insert Panel List
+          </button>
+        </nav>
+
+        <button 
+          (click)="loadOverallReport()" 
+          [disabled]="isLoadingOverallReport()"
           type="button"
-          [class]="activeTab() === 'update' ? 'bg-white text-cyan-700 shadow-sm ring-1 ring-slate-200/50 scale-[1.02]' : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
-          class="flex-1 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-cyan-500/30 md:flex-none"
+          class="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-50 px-5 py-2.5 text-sm font-bold text-rose-700 shadow-sm ring-1 ring-rose-200/50 transition-all hover:bg-rose-100 hover:scale-105 active:scale-95 disabled:opacity-50"
         >
-        Message Update Panel
+          @if (isLoadingOverallReport()) {
+            <svg class="h-4 w-4 animate-spin text-rose-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          }
+          Report
         </button>
-        <button
-          (click)="setActiveTab('create')"
-          type="button"
-          [class]="activeTab() === 'create' ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-slate-200/50 scale-[1.02]' : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
-          class="flex-1 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30 md:flex-none"
-        >
-          Create New
-        </button>
-        <button
-          (click)="setActiveTab('panel')"
-          type="button"
-          [class]="activeTab() === 'panel' ? 'bg-white text-indigo-700 shadow-sm ring-1 ring-slate-200/50 scale-[1.02]' : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'"
-          class="flex-1 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-indigo-500/30 md:flex-none"
-        >
-          Message Insert Panel List
-        </button>
-      </nav>
+      </div>
     </header>
+
+    <!-- Overall Report Section -->
+    @if (overallReport(); as reports) {
+      <div class="mb-8 rounded-3xl border border-indigo-100 bg-indigo-50/30 p-6 shadow-xl shadow-indigo-900/5 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div class="mb-5 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-3">
+                <h3 class="text-xl font-extrabold text-slate-800">Overall Push Report</h3>
+                <button 
+                  (click)="loadOverallReport()" 
+                  [disabled]="isLoadingOverallReport()"
+                  class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 transition-all hover:bg-indigo-100 hover:scale-110 active:scale-90 disabled:opacity-50"
+                  title="Sync Data"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" [class.animate-spin]="isLoadingOverallReport()" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+              </div>
+              <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Monthly Distribution</p>
+            </div>
+          </div>
+          <button (click)="closeOverallReport()" class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm ring-1 ring-slate-200 transition-all hover:bg-slate-50 hover:text-slate-600 active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+          @for (item of reports; track $index) {
+            <div class="group relative overflow-hidden rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 transition-all hover:-translate-y-1 hover:shadow-lg hover:ring-indigo-300">
+              <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-indigo-50 opacity-0 transition-opacity group-hover:opacity-100"></div>
+              <div class="relative z-10">
+                <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400">{{ getMonthName(item.month) }} {{ item.year }}</div>
+                <div class="mt-1 text-2xl font-black text-indigo-700 tracking-tight">{{ item.totalPush | number }}</div>
+                <div class="text-[10px] font-semibold text-slate-500">Push Notifications</div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
 
     <!-- Content Area -->
     <section class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-200/50 sm:p-8">
@@ -401,6 +470,13 @@
                               Send Message
                             </button>
                           }
+                          <button 
+                             (click)="openReportInNewTab(msg.messageID)" 
+                             type="button" 
+                             class="inline-flex items-center rounded-lg bg-slate-50 border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-all hover:scale-105 hover:bg-slate-100 hover:border-slate-300 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500/40"
+                           >
+                             Report
+                           </button>
                           <button type="button" (click)="openEditInNewTab(msg.messageID)" class="inline-flex items-center rounded-lg bg-blue-50 border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-all hover:scale-105 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
                             Edit
                           </button>
@@ -485,6 +561,81 @@
             </div>
             <p class="mt-3 text-xs text-slate-400 font-medium italic">Processing batch at page 1 continuously...</p>
           </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Report Modal -->
+  @if (isReportModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-all duration-300">
+      <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <!-- Header -->
+        <div class="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
+          <h3 class="text-xl font-bold text-slate-800">Message Report</h3>
+          <div class="flex items-center gap-2">
+            <button 
+              (click)="syncReport()" 
+              [disabled]="isLoadingReport()"
+              type="button" 
+              class="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 transition-all hover:bg-indigo-100 hover:scale-105 active:scale-95 disabled:opacity-50"
+              title="Sync Data"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" [class.animate-spin]="isLoadingReport()" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+            <button (click)="closeReportModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="space-y-4 py-2">
+          @if (isLoadingReport() && !reportData()) {
+            <div class="flex flex-col items-center justify-center py-10 gap-3">
+              <div class="h-8 w-8 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600"></div>
+              <p class="text-sm font-medium text-slate-500">Fetching report data...</p>
+            </div>
+          } @else if (reportData(); as data) {
+            <div class="rounded-xl bg-slate-50 p-5 space-y-4 border border-slate-100 shadow-inner">
+              <div class="flex flex-col gap-3">
+                <div class="text-slate-800 font-semibold tracking-tight">No PID Found</div>
+                
+                <div class="flex flex-col gap-1.5 pt-2 border-t border-slate-200">
+                  <div class="text-sm font-medium text-slate-500">Notificaion Sent Unique User</div>
+                  <div class="text-2xl font-black text-indigo-700 tracking-tight">{{ data.uniqueUser | number }}</div>
+                </div>
+
+                <div class="flex flex-col gap-1.5 pt-2 border-t border-slate-200">
+                  <div class="text-sm font-medium text-slate-500">Notificaion Send Total User</div>
+                  <div class="text-2xl font-black text-indigo-700 tracking-tight">{{ data.totalUser | number }}</div>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="flex flex-col items-center justify-center py-10 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p class="text-slate-500 font-medium">No report data found.</p>
+              <button (click)="syncReport()" class="mt-4 text-sm font-bold text-indigo-600 hover:underline">Try fetching again</button>
+            </div>
+          }
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 flex justify-end">
+          <button 
+            type="button" 
+            (click)="closeReportModal()" 
+            class="rounded-xl bg-slate-100 px-6 py-2.5 text-sm font-bold text-slate-700 transition-all hover:bg-slate-200 hover:scale-105 active:scale-95"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>

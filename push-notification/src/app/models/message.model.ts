@@ -70,3 +70,10 @@ export interface NotificationCountsResponse {
   error: any;
   request: any;
 }
+
+export interface OverallPushCount {
+  year: number;
+  month: number;
+  totalPush: number;
+}
+

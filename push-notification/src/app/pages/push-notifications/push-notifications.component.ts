@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { PushNotificationService } from '../../services/push-notification.service';
-import { ApiResponseMessage, ParsedMessageDetails } from '../../models/message.model';
+import { ApiResponseMessage, NotificationCounts, OverallPushCount, ParsedMessageDetails } from '../../models/message.model';
 
 export interface UpdatePanelDraft {
   messageNo: number;
@@ -97,6 +97,17 @@ export class PushNotificationsComponent implements OnInit {
         replaceUrl: true
       });
     }
+
+    if (action === 'report' && msgId) {
+      const id = +msgId;
+      this.openReportModal(id);
+      
+      this.router.navigate([], {
+        queryParams: { action: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true
+      });
+    }
   }
 
   protected openEditInNewTab(id: number): void {
@@ -105,6 +116,10 @@ export class PushNotificationsComponent implements OnInit {
 
   protected openSendInNewTab(id: number): void {
     this.openUrlInNewTab({ tab: 'panel', msgId: id, action: 'send' });
+  }
+
+  protected openReportInNewTab(id: number): void {
+    this.openUrlInNewTab({ tab: 'panel', msgId: id, action: 'report' });
   }
 
   private openUrlInNewTab(queryParams: any): void {
@@ -141,7 +156,14 @@ export class PushNotificationsComponent implements OnInit {
     valid: true
   });
 
+  isReportModalOpen = signal(false);
+  reportData = signal<NotificationCounts | null>(null);
+  isLoadingReport = signal(false);
+  reportMessageId = signal<number | null>(null);
+
   messages = signal<ApiResponseMessage[]>([]);
+  overallReport = signal<OverallPushCount[] | null>(null);
+  isLoadingOverallReport = signal(false);
 
   constructor() {
     effect(() => {
@@ -418,12 +440,12 @@ export class PushNotificationsComponent implements OnInit {
     this.processBatch(messageID, 0);
   }
 
-  private processBatch(messageID: number, cumulativeAlreadySent: number): void {
+  private processBatch(messageID: number, cumulativeAlreadySent: number, pageNo: number = 1): void {
     const BATCH_SIZE = 250;
     this.notificationService
       .sendNotificationBatch({
         messageID,
-        pageNo: 1,
+        pageNo,
         batchSize: BATCH_SIZE
       })
       .subscribe({
@@ -456,7 +478,7 @@ export class PushNotificationsComponent implements OnInit {
               }
             });
           } else {
-            this.processBatch(messageID, nextCumulative);
+            this.processBatch(messageID, nextCumulative, pageNo + 1);
           }
         },
         error: (err) => {
@@ -467,5 +489,64 @@ export class PushNotificationsComponent implements OnInit {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       });
+  }
+
+  protected openReportModal(id: number): void {
+    this.reportMessageId.set(id);
+    this.isReportModalOpen.set(true);
+    this.fetchReportData(id);
+  }
+
+  protected syncReport(): void {
+    const id = this.reportMessageId();
+    if (id !== null) {
+      this.fetchReportData(id);
+    }
+  }
+
+  private fetchReportData(id: number): void {
+    this.isLoadingReport.set(true);
+    this.notificationService.getNotificationCounts(id)
+      .pipe(finalize(() => this.isLoadingReport.set(false)))
+      .subscribe({
+        next: (res) => {
+          this.reportData.set(res.data);
+        },
+        error: (err) => {
+          console.error('Failed to fetch report data', err);
+        }
+      });
+  }
+
+  protected closeReportModal(): void {
+    this.isReportModalOpen.set(false);
+    this.reportData.set(null);
+    this.reportMessageId.set(null);
+  }
+
+  protected loadOverallReport(): void {
+    this.isLoadingOverallReport.set(true);
+    this.notificationService.getOverallPushCount()
+      .pipe(finalize(() => this.isLoadingOverallReport.set(false)))
+      .subscribe({
+        next: (res) => {
+          this.overallReport.set(res);
+        },
+        error: (err) => {
+          console.error('Failed to fetch overall report data', err);
+        }
+      });
+  }
+
+  protected closeOverallReport(): void {
+    this.overallReport.set(null);
+  }
+
+  protected getMonthName(month: number): string {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month - 1] || 'Unknown';
   }
 }
