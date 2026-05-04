@@ -141,6 +141,7 @@ export class PushNotificationsComponent implements OnInit {
   
   isSendingBulk = signal(false);
   bulkSentCumulative = signal(0);
+  currentBulkPage = signal(1);
 
   updateDraft = signal<UpdatePanelDraft | null>(null);
   createDraft = signal<UpdatePanelDraft>({
@@ -442,6 +443,7 @@ export class PushNotificationsComponent implements OnInit {
 
   private processBatch(messageID: number, cumulativeAlreadySent: number, pageNo: number = 1): void {
     const BATCH_SIZE = 250;
+    this.currentBulkPage.set(pageNo);
     this.notificationService
       .sendNotificationBatch({
         messageID,
