@@ -20,7 +20,7 @@ const SEND_NOTIFICATION_URL =
   'https://api.bdjobs.com/bdjobs-promotional-push/api/PromotionalPushNotification/SendNotification';
 
 const NOTIFICATION_COUNTS_URL =
-  'https://api.bdjobs.com/PushNotification/api/PushNotification/counts';
+  'https://api.bdjobs.com/bdjobs-promotional-push/api/PromotionalPushNotification/GetNotificationCount';
 
 const OVERALL_PUSH_COUNT_URL =
   'https://api.bdjobs.com/bdjobs-promotional-push/api/PromotionalPushNotification/GetOverallPushCount';
@@ -99,9 +99,9 @@ export class PushNotificationService {
       .pipe(map((response) => this.extractSendNotificationResult(response)));
   }
 
-  getNotificationCounts(messageId: number): Observable<NotificationCountsResponse> {
-    console.log('Sending count API for messageId:', messageId);
-    return this.http.get<NotificationCountsResponse>(`${NOTIFICATION_COUNTS_URL}?messageId=${messageId}`);
+  getNotificationCounts(messageId: number, flag: number = 0): Observable<NotificationCountsResponse> {
+    console.log('Sending count API for messageId:', messageId, 'flag:', flag);
+    return this.http.get<NotificationCountsResponse>(`${NOTIFICATION_COUNTS_URL}?messageId=${messageId}&flag=${flag}`);
   }
 
   getOverallPushCount(): Observable<OverallPushCount[]> {

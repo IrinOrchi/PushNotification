@@ -595,26 +595,44 @@
 
         <!-- Content -->
         <div class="space-y-4 py-2">
-          @if (isLoadingReport() && !reportData()) {
+          @if (isLoadingReport() && reportData().length === 0) {
             <div class="flex flex-col items-center justify-center py-10 gap-3">
               <div class="h-8 w-8 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600"></div>
               <p class="text-sm font-medium text-slate-500">Fetching report data...</p>
             </div>
-          } @else if (reportData(); as data) {
-            <div class="rounded-xl bg-slate-50 p-5 space-y-4 border border-slate-100 shadow-inner">
-              <div class="flex flex-col gap-3">
-                <div class="text-slate-800 font-semibold tracking-tight">No PID Found</div>
-                
-                <div class="flex flex-col gap-1.5 pt-2 border-t border-slate-200">
-                  <div class="text-sm font-medium text-slate-500">Notificaion Sent Unique User</div>
-                  <div class="text-2xl font-black text-indigo-700 tracking-tight">{{ data.uniqueUser | number }}</div>
-                </div>
+          } @else if (reportData().length > 0) {
+            <div class="max-h-[60vh] overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+              @for (item of reportData(); track $index) {
+                <div class="rounded-xl bg-slate-50 p-5 space-y-4 border border-slate-100 shadow-inner">
+                  <div class="flex flex-col gap-3">
+                    <div class="text-slate-800 font-bold tracking-tight text-lg">Message No: {{ item.messageNo }}</div>
+                    
+                    <div class="flex flex-col gap-1.5 pt-2 border-t border-slate-200">
+                      <div class="text-sm font-medium text-slate-500">Unique User</div>
+                      <div class="text-xl font-black text-indigo-700 tracking-tight">{{ item.uniqueUser | number }}</div>
+                    </div>
 
-                <div class="flex flex-col gap-1.5 pt-2 border-t border-slate-200">
-                  <div class="text-sm font-medium text-slate-500">Notificaion Send Total User</div>
-                  <div class="text-2xl font-black text-indigo-700 tracking-tight">{{ data.totalUser | number }}</div>
+                    <div class="flex flex-col gap-1.5 pt-2 border-t border-slate-200">
+                      <div class="text-sm font-medium text-slate-500">Total User</div>
+                      <div class="text-xl font-black text-indigo-700 tracking-tight">{{ item.totalUser | number }}</div>
+                    </div>
+
+                    @if (item.firstSentNotification) {
+                      <div class="flex flex-col gap-1.5 pt-2 border-t border-slate-200">
+                        <div class="text-sm font-medium text-slate-500">First Sent Time</div>
+                        <div class="text-md font-bold text-slate-700">{{ item.firstSentNotification }}</div>
+                      </div>
+                    }
+
+                    @if (item.lastSentNotification) {
+                      <div class="flex flex-col gap-1.5 pt-2 border-t border-slate-200">
+                        <div class="text-sm font-medium text-slate-500">Last Sent Time</div>
+                        <div class="text-md font-bold text-slate-700">{{ item.lastSentNotification }}</div>
+                      </div>
+                    }
+                  </div>
                 </div>
-              </div>
+              }
             </div>
           } @else {
             <div class="flex flex-col items-center justify-center py-10 text-center">
@@ -628,7 +646,14 @@
         </div>
 
         <!-- Footer -->
-        <div class="mt-8 flex justify-end">
+        <div class="mt-8 flex justify-between items-center">
+          <button 
+            type="button" 
+            (click)="fetchOverallList()" 
+            class="rounded-xl bg-indigo-50 px-6 py-2.5 text-sm font-bold text-indigo-700 transition-all hover:bg-indigo-100 hover:scale-105 active:scale-95 border border-indigo-200"
+          >
+            Overall List
+          </button>
           <button 
             type="button" 
             (click)="closeReportModal()" 

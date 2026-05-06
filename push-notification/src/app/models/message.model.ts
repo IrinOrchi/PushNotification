@@ -61,12 +61,14 @@ export interface NotificationCounts {
   messageNo: number;
   uniqueUser: number;
   totalUser: number;
+  firstSentNotification?: string;
+  lastSentNotification?: string;
 }
 
 export interface NotificationCountsResponse {
   code: number;
   message: string;
-  data: NotificationCounts;
+  data: NotificationCounts | NotificationCounts[];
   error: any;
   request: any;
 }

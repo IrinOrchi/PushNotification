@@ -158,7 +158,7 @@ export class PushNotificationsComponent implements OnInit {
   });
 
   isReportModalOpen = signal(false);
-  reportData = signal<NotificationCounts | null>(null);
+  reportData = signal<NotificationCounts[]>([]);
   isLoadingReport = signal(false);
   reportMessageId = signal<number | null>(null);
 
@@ -185,6 +185,17 @@ export class PushNotificationsComponent implements OnInit {
         activityNode: msg.parsedDetails?.activityNode ?? '',
         valid: msg.valid === 1
       });
+    });
+
+    effect(() => {
+      const isAnyModalOpen = this.messageToDelete() !== null || 
+                             this.isSendingBulk() || 
+                             this.isReportModalOpen();
+      if (isAnyModalOpen) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
     });
   }
 
@@ -464,8 +475,18 @@ export class PushNotificationsComponent implements OnInit {
                 this.isSendingBulk.set(false);
                 this.updateStatus.set('success');
 
-                const uniqueUser = countRes.data?.uniqueUser ?? 0;
-                const msgId = countRes.data?.messageID ?? messageID;
+                const resAny: any = countRes;
+                let dataObj: any;
+                if (Array.isArray(resAny)) {
+                  dataObj = resAny[0];
+                } else if (resAny && resAny.data) {
+                  dataObj = Array.isArray(resAny.data) ? resAny.data[0] : resAny.data;
+                } else {
+                  dataObj = resAny;
+                }
+
+                const uniqueUser = dataObj?.uniqueUser ?? 0;
+                const msgId = dataObj?.messageID ?? messageID;
 
                 this.updateSuccessMessage.set(
                   `Notification process completed. Total processed: ${grandTotal}. No PID Found. Notification Sent Total Unique User = ${uniqueUser}. MessageID : ${messageID}`
@@ -496,23 +517,38 @@ export class PushNotificationsComponent implements OnInit {
   protected openReportModal(id: number): void {
     this.reportMessageId.set(id);
     this.isReportModalOpen.set(true);
-    this.fetchReportData(id);
+    this.fetchReportData(id, 0);
   }
 
   protected syncReport(): void {
     const id = this.reportMessageId();
     if (id !== null) {
-      this.fetchReportData(id);
+      this.fetchReportData(id, 1);
     }
   }
 
-  private fetchReportData(id: number): void {
+  protected fetchOverallList(): void {
+    const id = this.reportMessageId();
+    if (id !== null) {
+      this.fetchReportData(id, 0);
+    }
+  }
+
+  private fetchReportData(id: number, flag: number = 0): void {
     this.isLoadingReport.set(true);
-    this.notificationService.getNotificationCounts(id)
+    this.notificationService.getNotificationCounts(id, flag)
       .pipe(finalize(() => this.isLoadingReport.set(false)))
       .subscribe({
-        next: (res) => {
-          this.reportData.set(res.data);
+        next: (res: any) => {
+          let dataArray: any[] = [];
+          if (Array.isArray(res)) {
+            dataArray = res;
+          } else if (res && res.data) {
+            dataArray = Array.isArray(res.data) ? res.data : [res.data];
+          } else if (res && typeof res === 'object' && res.messageID) {
+            dataArray = [res];
+          }
+          this.reportData.set(dataArray);
         },
         error: (err) => {
           console.error('Failed to fetch report data', err);
@@ -522,7 +558,7 @@ export class PushNotificationsComponent implements OnInit {
 
   protected closeReportModal(): void {
     this.isReportModalOpen.set(false);
-    this.reportData.set(null);
+    this.reportData.set([]);
     this.reportMessageId.set(null);
   }
 
