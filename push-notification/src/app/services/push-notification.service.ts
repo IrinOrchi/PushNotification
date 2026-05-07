@@ -117,12 +117,18 @@ export class PushNotificationService {
       if (data && typeof data.value === 'object') {
         return data.value as SendNotificationResult;
       }
+      if (data && typeof data.value === 'string') {
+        throw new Error(data.value);
+      }
     }
 
     const failureEvent = events.find((e) => Number(e.eventType) === 2);
     if (failureEvent) {
-      const msg = this.pickMessage(failureEvent);
-      throw new Error(msg || 'Failed to send notification batch.');
+      const data = failureEvent.eventData?.find(d => d.key === 'message');
+      const msg = data?.value
+        ? (typeof data.value === 'string' ? data.value : data.value.message || data.value.messageFlag || JSON.stringify(data.value))
+        : this.pickMessage(failureEvent) || 'Failed to send notification batch.';
+      throw new Error(msg);
     }
 
     throw new Error('Could not parse send notification result.');

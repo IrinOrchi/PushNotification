@@ -452,7 +452,7 @@ export class PushNotificationsComponent implements OnInit {
     this.processBatch(messageID, 0);
   }
 
-  private processBatch(messageID: number, cumulativeAlreadySent: number, pageNo: number = 0): void {
+  private processBatch(messageID: number, pageNo: number = 0): void {
     const BATCH_SIZE = 250;
     this.currentBulkPage.set(pageNo);
     this.notificationService
@@ -463,13 +463,11 @@ export class PushNotificationsComponent implements OnInit {
       })
       .subscribe({
         next: (res) => {
-          const grandTotal = res.totalSent; 
-          const nextCumulative = cumulativeAlreadySent + BATCH_SIZE;
-          
-          const displayTotal = nextCumulative > grandTotal ? grandTotal : nextCumulative;
-          this.bulkSentCumulative.set(displayTotal);
+          this.bulkSentCumulative.update(prev => prev + res.totalSent);
 
-          if (nextCumulative >= grandTotal) {
+          if (res.pageNo === -1) {
+            // Last batch — fetch final counts and show completion
+            const cumulativeSent = this.bulkSentCumulative();
             this.notificationService.getNotificationCounts(messageID).subscribe({
               next: (countRes) => {
                 this.isSendingBulk.set(false);
@@ -486,22 +484,22 @@ export class PushNotificationsComponent implements OnInit {
                 }
 
                 const uniqueUser = dataObj?.uniqueUser ?? 0;
-                const msgId = dataObj?.messageID ?? messageID;
 
                 this.updateSuccessMessage.set(
-                  `Notification process completed. Total processed: ${grandTotal}. No PID Found. Notification Sent Total Unique User = ${uniqueUser}. MessageID : ${messageID}`
+                  `Notification process completed. Total processed: ${cumulativeSent}. No PID Found. Notification Sent Total Unique User = ${uniqueUser}. MessageID : ${messageID}`
                 );
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               },
               error: () => {
                 this.isSendingBulk.set(false);
                 this.updateStatus.set('success');
-                this.updateSuccessMessage.set(`Notification process completed. Total processed: ${grandTotal}. (Note: Could not fetch final counts)`);
+                this.updateSuccessMessage.set(`Notification process completed. Total processed: ${cumulativeSent}. (Note: Could not fetch final counts)`);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }
             });
           } else {
-            this.processBatch(messageID, nextCumulative, pageNo + 1);
+            // More pages to send — use pageNo from response for the next call
+            this.processBatch(messageID, res.pageNo);
           }
         },
         error: (err) => {

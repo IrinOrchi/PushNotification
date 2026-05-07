@@ -33,7 +33,10 @@ export interface SendNotificationRequest {
 
 export interface SendNotificationResult {
   message: string;
+  messageFlag: string;
+  totalUser: number;
   totalSent: number;
+  pageNo: number;
 }
 
 export interface UpdateUserMessageRequest {
@@ -60,7 +63,7 @@ export interface NotificationCounts {
   messageID: number;
   messageNo: number;
   uniqueUser: number;
-  totalUser: number;
+  totalSent: number;
   firstSentNotification?: string;
   lastSentNotification?: string;
 }
