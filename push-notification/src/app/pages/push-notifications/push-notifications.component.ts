@@ -452,7 +452,7 @@ export class PushNotificationsComponent implements OnInit {
     this.processBatch(messageID, 0);
   }
 
-  private processBatch(messageID: number, cumulativeAlreadySent: number, pageNo: number = 1): void {
+  private processBatch(messageID: number, cumulativeAlreadySent: number, pageNo: number = 0): void {
     const BATCH_SIZE = 250;
     this.currentBulkPage.set(pageNo);
     this.notificationService
